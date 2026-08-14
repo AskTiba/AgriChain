@@ -6,9 +6,9 @@ A commercial-grade agricultural logistics and supply chain coordination platform
 ## Milestones
 
 ### Milestone 1: Multi-Tenant Configuration & Onboarding
-- [ ] Cooperative Profile setup (geographic location, crop categories)
-- [ ] Role-Based Access Control (Admin, Co-op Manager, Driver, Buyer)
-- [ ] Responsive onboarding wizard (320px+)
+- [x] Cooperative Profile setup (geographic location, crop categories)
+- [x] Role-Based Access Control (Admin, Co-op Manager, Driver, Buyer)
+- [x] Responsive onboarding wizard (320px+)
 
 ### Milestone 2: Harvest Logging & Inventory Management
 - [ ] Real-time yield logging form (Crop type, quality grade, quantity, field ID)
