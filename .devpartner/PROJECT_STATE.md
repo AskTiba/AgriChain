@@ -9,25 +9,30 @@
 - Onboarding page with cooperative profile form (name + region inputs)
 - Design token system (CSS custom properties) for light/dark themes
 - Global CSS with prefers-reduced-motion fallbacks, focus-visible rings
+- Onboarding wizard with 3 steps: Profile → Role → Review
+- Role selector with 4 options (Admin, Co-op Manager, Driver, Buyer)
+- Step-level validation with error banner and aria-invalid on fields
+- Back navigation preserves form data
+- Review step shows all data before submission
+- Error states with retry for failed submissions
+- Form reset after successful submission
 - Git repo initialized
   - `330e396` feat: scaffold TanStack Start project with design tokens
   - `681861c` feat: add onboarding route with cooperative profile form
   - `92c116a` feat: add form validation with TanStack Form
   - `3722c9a` feat: add submit handler with success state and form reset
+  - `dafe8b5` feat: add error states for failed profile submission
+  - `da69d62` feat: add role selection to onboarding form
+  - `9dc4056` feat: add onboarding wizard layout with step navigation
 
 ## In Progress
 - Sprint 1: Multi-Tenant Configuration & Onboarding
-  - Story: Cooperative Profile Setup [5 pts]
-    - Unit 1: Route structure + test ✓ (done)
-    - Unit 2: Form validation + test ✓ (done)
-    - Unit 3: Submit handler + test ✓ (done)
-    - Unit 4: Success/error states + test
-  - Story: Role Selection [3 pts]
-  - Story: Onboarding Wizard Layout [5 pts]
+  - Story: Cooperative Profile Setup [5 pts] ✓
+  - Story: Role Selection [3 pts] ✓
+  - Story: Onboarding Wizard Layout [5 pts] ✓
 
 ## Blocked / Issues
 - ESLint not installed (tech debt, add next session)
-- No test files yet (test-first workflow starts with first feature)
 
 ## Key Architectural Facts
 - **Framework:** TanStack Start (SSR + Server Functions)
