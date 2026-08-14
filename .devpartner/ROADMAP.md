@@ -11,9 +11,9 @@ A commercial-grade agricultural logistics and supply chain coordination platform
 - [x] Responsive onboarding wizard (320px+)
 
 ### Milestone 2: Harvest Logging & Inventory Management
-- [ ] Real-time yield logging form (Crop type, quality grade, quantity, field ID)
+- [x] Real-time yield logging form (Crop type, quality grade, quantity, field ID)
 - [ ] Offline caching with TanStack Query PersistQueryClient
-- [ ] Warehouse capacity visualization with animated meters
+- [x] Warehouse capacity visualization with animated meters
 
 ### Milestone 3: Logistics & Transport Matchmaking
 - [ ] Dynamic vehicle ledger (truck payload, active driver, destination)

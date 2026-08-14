@@ -1,5 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
+import { useState } from 'react'
 import { WarehouseCapacity } from '../components/warehouse-capacity'
+import { VehicleLedger } from '../components/vehicle-ledger'
 
 export const Route = createFileRoute('/logistics')({
   component: Logistics,
@@ -12,7 +14,29 @@ const MOCK_WAREHOUSES = [
   { id: 'W4', name: 'Warehouse D', used: 310, total: 1000 },
 ]
 
+interface Vehicle {
+  id: string
+  name: string
+  payload: number
+  driver: string
+  destination: string
+}
+
+const INITIAL_VEHICLES: Vehicle[] = [
+  { id: 'V1', name: 'Truck A', payload: 5000, driver: 'John Doe', destination: 'Market East' },
+  { id: 'V2', name: 'Truck B', payload: 3000, driver: 'Jane Smith', destination: 'Warehouse North' },
+]
+
 function Logistics() {
+  const [vehicles, setVehicles] = useState<Vehicle[]>(INITIAL_VEHICLES)
+
+  const handleAddVehicle = (newVehicle: Omit<Vehicle, 'id'>) => {
+    setVehicles((prev) => [
+      ...prev,
+      { ...newVehicle, id: crypto.randomUUID() },
+    ])
+  }
+
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <section className="mb-12 animate-fade-in-up">
@@ -34,16 +58,11 @@ function Logistics() {
         <WarehouseCapacity warehouses={MOCK_WAREHOUSES} />
       </section>
 
-      <section
-        aria-label="Vehicle ledger"
-        className="rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-surface-elevated)] p-6 shadow-sm"
-      >
-        <h2 className="mb-6 text-lg font-semibold text-[var(--color-text)]">
-          Active Vehicles
+      <section aria-label="Vehicle ledger">
+        <h2 className="mb-6 text-xl font-semibold text-[var(--color-text)]">
+          Vehicle Ledger
         </h2>
-        <p className="text-sm text-[var(--color-text-muted)]">
-          Drag-and-drop shipment assignment will be built here.
-        </p>
+        <VehicleLedger vehicles={vehicles} onAdd={handleAddVehicle} />
       </section>
     </div>
   )
