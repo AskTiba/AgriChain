@@ -1,13 +1,14 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useForm } from '@tanstack/react-form'
 import { useState } from 'react'
+import { RoleSelector } from '../components/role-selector'
 
 export const Route = createFileRoute('/onboarding')({
   component: Onboarding,
 })
 
 interface OnboardingProps {
-  onSubmit?: (values: { coopName: string; region: string }) => Promise<void> | void
+  onSubmit?: (values: { coopName: string; region: string; role: string }) => Promise<void> | void
 }
 
 export function Onboarding({ onSubmit }: OnboardingProps) {
@@ -18,6 +19,7 @@ export function Onboarding({ onSubmit }: OnboardingProps) {
     defaultValues: {
       coopName: '',
       region: '',
+      role: '',
     },
     onSubmit: async ({ value }) => {
       setError(null)
@@ -142,6 +144,28 @@ export function Onboarding({ onSubmit }: OnboardingProps) {
               />
               {field.state.meta.errors.length > 0 && (
                 <p id="region-error" role="alert" className="mt-1 text-sm text-[var(--color-danger)]">
+                  {field.state.meta.errors[0]}
+                </p>
+              )}
+            </div>
+          )}
+        </form.Field>
+
+        <form.Field
+          name="role"
+          validators={{
+            onChange: ({ value }) =>
+              !value ? 'Role is required' : undefined,
+          }}
+        >
+          {(field) => (
+            <div className="mb-6">
+              <RoleSelector
+                value={field.state.value}
+                onChange={field.handleChange}
+              />
+              {field.state.meta.errors.length > 0 && (
+                <p id="role-error" role="alert" className="mt-1 text-sm text-[var(--color-danger)]">
                   {field.state.meta.errors[0]}
                 </p>
               )}

@@ -9,13 +9,10 @@ describe('Onboarding Error States', () => {
     const onSubmit = vi.fn().mockRejectedValue(new Error('Network error'))
     render(<Onboarding onSubmit={onSubmit} />)
 
-    const nameInput = screen.getByLabelText(/cooperative name/i)
-    const regionInput = screen.getByLabelText(/region/i)
-    const submitButton = screen.getByRole('button', { name: /save profile/i })
-
-    await user.type(nameInput, 'Green Valley Farmers')
-    await user.type(regionInput, 'Western Province')
-    await user.click(submitButton)
+    await user.type(screen.getByLabelText(/cooperative name/i), 'Green Valley Farmers')
+    await user.type(screen.getByLabelText(/region/i), 'Western Province')
+    await user.click(screen.getByRole('radio', { name: /admin/i }))
+    await user.click(screen.getByRole('button', { name: /save profile/i }))
 
     expect(screen.getByRole('alert')).toHaveTextContent(/failed to save profile/i)
   })
@@ -27,11 +24,11 @@ describe('Onboarding Error States', () => {
 
     const nameInput = screen.getByLabelText(/cooperative name/i)
     const regionInput = screen.getByLabelText(/region/i)
-    const submitButton = screen.getByRole('button', { name: /save profile/i })
 
     await user.type(nameInput, 'Green Valley Farmers')
     await user.type(regionInput, 'Western Province')
-    await user.click(submitButton)
+    await user.click(screen.getByRole('radio', { name: /admin/i }))
+    await user.click(screen.getByRole('button', { name: /save profile/i }))
 
     expect(nameInput).toHaveValue('Green Valley Farmers')
     expect(regionInput).toHaveValue('Western Province')
@@ -44,17 +41,14 @@ describe('Onboarding Error States', () => {
       .mockResolvedValueOnce(undefined)
     render(<Onboarding onSubmit={onSubmit} />)
 
-    const nameInput = screen.getByLabelText(/cooperative name/i)
-    const regionInput = screen.getByLabelText(/region/i)
-    const submitButton = screen.getByRole('button', { name: /save profile/i })
-
-    await user.type(nameInput, 'Green Valley Farmers')
-    await user.type(regionInput, 'Western Province')
-    await user.click(submitButton)
+    await user.type(screen.getByLabelText(/cooperative name/i), 'Green Valley Farmers')
+    await user.type(screen.getByLabelText(/region/i), 'Western Province')
+    await user.click(screen.getByRole('radio', { name: /admin/i }))
+    await user.click(screen.getByRole('button', { name: /save profile/i }))
 
     expect(screen.getByRole('alert')).toHaveTextContent(/failed to save profile/i)
 
-    await user.click(submitButton)
+    await user.click(screen.getByRole('button', { name: /save profile/i }))
 
     expect(screen.queryByText(/failed to save profile/i)).not.toBeInTheDocument()
     expect(screen.getByText(/profile saved successfully/i)).toBeInTheDocument()

@@ -9,17 +9,15 @@ describe('Onboarding Form Submission', () => {
     const onSubmit = vi.fn()
     render(<Onboarding onSubmit={onSubmit} />)
 
-    const nameInput = screen.getByLabelText(/cooperative name/i)
-    const regionInput = screen.getByLabelText(/region/i)
-    const submitButton = screen.getByRole('button', { name: /save profile/i })
-
-    await user.type(nameInput, 'Green Valley Farmers')
-    await user.type(regionInput, 'Western Province')
-    await user.click(submitButton)
+    await user.type(screen.getByLabelText(/cooperative name/i), 'Green Valley Farmers')
+    await user.type(screen.getByLabelText(/region/i), 'Western Province')
+    await user.click(screen.getByRole('radio', { name: /admin/i }))
+    await user.click(screen.getByRole('button', { name: /save profile/i }))
 
     expect(onSubmit).toHaveBeenCalledWith({
       coopName: 'Green Valley Farmers',
       region: 'Western Province',
+      role: 'admin',
     })
   })
 
@@ -28,9 +26,7 @@ describe('Onboarding Form Submission', () => {
     const onSubmit = vi.fn()
     render(<Onboarding onSubmit={onSubmit} />)
 
-    const submitButton = screen.getByRole('button', { name: /save profile/i })
-
-    await user.click(submitButton)
+    await user.click(screen.getByRole('button', { name: /save profile/i }))
 
     expect(onSubmit).not.toHaveBeenCalled()
   })
@@ -40,13 +36,10 @@ describe('Onboarding Form Submission', () => {
     const onSubmit = vi.fn()
     render(<Onboarding onSubmit={onSubmit} />)
 
-    const nameInput = screen.getByLabelText(/cooperative name/i)
-    const regionInput = screen.getByLabelText(/region/i)
-    const submitButton = screen.getByRole('button', { name: /save profile/i })
-
-    await user.type(nameInput, 'Green Valley Farmers')
-    await user.type(regionInput, 'Western Province')
-    await user.click(submitButton)
+    await user.type(screen.getByLabelText(/cooperative name/i), 'Green Valley Farmers')
+    await user.type(screen.getByLabelText(/region/i), 'Western Province')
+    await user.click(screen.getByRole('radio', { name: /admin/i }))
+    await user.click(screen.getByRole('button', { name: /save profile/i }))
 
     expect(screen.getByText(/profile saved successfully/i)).toBeInTheDocument()
   })
@@ -58,11 +51,11 @@ describe('Onboarding Form Submission', () => {
 
     const nameInput = screen.getByLabelText(/cooperative name/i)
     const regionInput = screen.getByLabelText(/region/i)
-    const submitButton = screen.getByRole('button', { name: /save profile/i })
 
     await user.type(nameInput, 'Green Valley Farmers')
     await user.type(regionInput, 'Western Province')
-    await user.click(submitButton)
+    await user.click(screen.getByRole('radio', { name: /admin/i }))
+    await user.click(screen.getByRole('button', { name: /save profile/i }))
 
     expect(nameInput).toHaveValue('')
     expect(regionInput).toHaveValue('')
