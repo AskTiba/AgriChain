@@ -750,6 +750,67 @@ If a unit turns out bigger than expected once started, or the developer interrup
 mid-unit, re-decompose out loud rather than pushing through to a larger finished blob and
 sorting it out later.
 
+### 8.2.1 User Story Integration — Agile Scrum Framing
+
+Every unit of work maps to a user story. This is not ceremony — it's how the developer
+verifies that what's being built solves a real problem, not just that the code compiles.
+User stories appear at two points: **before starting** (to frame the work) and **before
+committing** (to verify the outcome).
+
+**Format — before starting a unit:**
+
+```
+── User Story ───────────────────────────────────────────────
+  As a [role],
+  I want [action/capability],
+  So that [benefit/value].
+
+  Acceptance Criteria:
+    - [ ] [Testable condition 1]
+    - [ ] [Testable condition 2]
+    - [ ] [Testable condition 3]
+
+  Technical Notes:
+    - [Key implementation decisions, library choices, or constraints]
+─────────────────────────────────────────────────────────────
+```
+
+**When presenting:** Show the user story before writing any code for that unit. The
+acceptance criteria map directly to the tests that will be written — if a criterion can't
+be tested, it's not a criterion.
+
+**When surfacing the commit point (Section 8.2, step 4):** Reference the user story again
+with verification status:
+
+```
+── User Story: [Title] ──────────────────────────────────────
+  As a [role],
+  I want [action/capability],
+  So that [benefit/value].
+
+  Verification:
+    ✓ [Criterion 1] — tested in [test file:line]
+    ✓ [Criterion 2] — tested in [test file:line]
+    ✓ [Criterion 3] — tested in [test file:line]
+
+  Unit N done. Files: X, Y. Want me to stage it?
+─────────────────────────────────────────────────────────────
+```
+
+**Rules:**
+- The user story is derived from the project's ROADMAP.md and the current sprint goal,
+  not invented on the spot. If no clear user story exists for a unit, say so — don't
+  fabricate one.
+- Acceptance criteria are **testable conditions**, not vague aspirations. "Looks good on
+  mobile" is not a criterion; "renders correctly at 320px viewport width" is.
+- The verification step references actual test files and line numbers — not "it works"
+  or "manually verified."
+- For small units (bug fixes, refactors), the user story can be a one-liner — the format
+  scales down. What matters is the framing, not the ceremony.
+- User stories are **not** repeated for every micro-unit within a larger feature — one
+  story covers a cohesive feature slice (typically 2-4 units). The decomposition list in
+  8.2 shows the units; the user story shows *why*.
+
 ### 8.3 The Commit Trigger — Developer-Only
 
 **The AI never commits without an explicit command from the developer.**
@@ -950,7 +1011,308 @@ closely enough that session — say so.
 - Branch naming convention goes in DECISIONS.md once established; follow it without
   re-discussion each session.
 
-## 9. End-of-Session Checklist
+### 8.11 Git Best Practices — Industry Standards
+
+#### Branching Strategy — GitHub Flow
+
+Follow **GitHub Flow** (simplified trunk-based development):
+
+```
+main (protected, always deployable)
+  └── feature/<ticket-id>-<short-description>
+      └── fix/<ticket-id>-<short-description>
+      └── refactor/<ticket-id>-<short-description>
+```
+
+| Branch Type | Purpose | Example |
+|---|---|---|
+| `main` | Production-ready, protected, never commits directly | — |
+| `feature/*` | New functionality | `feature/123-add-harvest-form` |
+| `fix/*` | Bug fixes | `fix/456-correct-date-parsing` |
+| `refactor/*` | Code restructuring, no behavior change | `refactor/789-extract-form-hooks` |
+| `chore/*` | Tooling, config, dependencies | `chore/012-upgrade-tailwind` |
+
+**Rules:**
+- Feature branches are short-lived (ideally < 3 days)
+- Branch from `main`, merge back via Pull Request
+- Delete branch after merge
+- Never commit directly to `main` (except trivial docs/chore)
+
+#### Pull Request Workflow
+
+1. **Branch** — Create feature branch from `main`
+2. **Implement** — Follow work loop (8.2), commit incrementally
+3. **Push** — `git push origin feature/<name>`
+4. **Open PR** — Title follows commit message format (≤12 words)
+5. **Describe** — PR body includes:
+   - User story addressed
+   - What changed (bullet list)
+   - How to verify (test commands, manual steps)
+   - Screenshots/recordings for UI changes
+6. **Review** — Self-review diff before requesting review
+7. **Merge** — Squash merge to keep `main` history clean
+8. **Delete** — Remove feature branch
+
+**PR Title Format:** `<type>: <description>` (same as commit message)
+
+#### Git Hooks — Quality Gates
+
+Use **Husky** + **lint-staged** for pre-commit quality enforcement:
+
+```bash
+pnpm add -D husky lint-staged
+npx husky init
+```
+
+**`.husky/pre-commit`:**
+```bash
+npx lint-staged
+```
+
+**`.husky/commit-msg`:**
+```bash
+npx commitlint --edit $1
+```
+
+**`package.json` lint-staged config:**
+```json
+{
+  "lint-staged": {
+    "*.{ts,tsx}": ["eslint --fix", "prettier --write"],
+    "*.{css,json,md}": ["prettier --write"]
+  }
+}
+```
+
+#### Commitlint — Enforce Message Format
+
+```bash
+pnpm add -D @commitlint/config-conventional @commitlint/cli
+```
+
+**`commitlint.config.js`:**
+```js
+export default {
+  extends: ['@commitlint/config-conventional'],
+  rules: {
+    'header-max-length': [2, 'always', 72],
+    'type-enum': [2, 'always', [
+      'feat', 'fix', 'refactor', 'docs', 'test',
+      'chore', 'build', 'perf', 'style', 'ci', 'revert'
+    ]],
+  },
+}
+```
+
+#### Semantic Versioning
+
+When releasing ( tagged commits):
+
+| Version Bump | When | Example |
+|---|---|---|
+| **Major** (`X.0.0`) | Breaking API changes | `1.0.0` → `2.0.0` |
+| **Minor** (`0.X.0`) | New features, backward-compatible | `1.0.0` → `1.1.0` |
+| **Patch** (`0.0.X`) | Bug fixes, backward-compatible | `1.0.0` → `1.0.1` |
+
+#### Changelog Generation
+
+Use **semantic-release** or **changesets** for automated changelogs:
+
+```bash
+# With changesets
+pnpm add -D @changesets/cli
+npx changeset  # Interactive prompt for version bump + changelog entry
+```
+
+#### Reflog — Safety Net
+
+Always know recovery is possible:
+
+```bash
+git reflog  # Shows all HEAD movements, even after reset/rebase
+git stash list  # Check for forgotten stashes
+```
+
+---
+
+## 9. Agile Scrum Framework
+
+This section defines how work is planned, tracked, and delivered. It integrates with the work decomposition loop (8.2) — user stories frame *why*, decomposition defines *how*.
+
+### 9.1 Sprint Structure
+
+| Ceremony | When | Duration | Purpose |
+|---|---|---|---|
+| **Sprint Planning** | Start of sprint | 1-2 hours | Select backlog items, define sprint goal, decompose into units |
+| **Daily Standup** | Daily (async or sync) | 5-15 min | What I did, what I'll do, blockers |
+| **Sprint Review** | End of sprint | 30-60 min | Demo working software, gather feedback |
+| **Sprint Retrospective** | After review | 15-30 min | What went well, what to improve, action items |
+
+**Sprint Duration:** 1-2 weeks (default: 1 week for AI-assisted development)
+
+### 9.2 User Stories — INVEST Criteria
+
+Every user story in the backlog must satisfy **INVEST**:
+
+| Criterion | Meaning | Question to Ask |
+|---|---|---|
+| **I**ndependent | Not dependent on other stories | "Can this be built and tested alone?" |
+| **N**egotiable | Details can be discussed, not fixed specs | "Is the scope flexible enough to adapt?" |
+| **V**aluable | Delivers value to a user | "Who benefits and how?" |
+| **E**stimable | Team can estimate effort | "Can we size this reasonably?" |
+| **S**mall | Fits in a single sprint | "Can this be done in ≤ 3 days?" |
+| **T**estable | Has clear acceptance criteria | "Can we verify this with tests?" |
+
+**When a story fails INVEST:** Split it, clarify it, or remove it. Don't carry bad stories into a sprint.
+
+### 9.3 User Story Format — Extended
+
+```
+── User Story ───────────────────────────────────────────────
+  ID:       [STORY-XXX]
+  Title:    [Short descriptive name]
+  As a     [role],
+  I want   [action/capability],
+  So that  [benefit/value].
+
+  Priority:  [Must Have | Should Have | Could Have | Won't Have (MoSCoW)]
+  Story Points: [1 | 2 | 3 | 5 | 8 | 13] (Fibonacci)
+  Sprint:   [Sprint N]
+
+  Acceptance Criteria:
+    - [ ] [Testable condition 1]
+    - [ ] [Testable condition 2]
+    - [ ] [Testable condition 3]
+
+  Technical Notes:
+    - [Implementation decisions, library choices, constraints]
+
+  Dependencies:
+    - [Other stories or external dependencies]
+─────────────────────────────────────────────────────────────
+```
+
+### 9.4 Story Points — Estimation
+
+Use **Fibonacci sequence** for relative estimation:
+
+| Points | Meaning | Time Estimate (approx) |
+|---|---|---|
+| **1** | Trivial, well-understood | < 30 min |
+| **2** | Small, clear scope | 30-60 min |
+| **3** | Medium, some unknowns | 1-2 hours |
+| **5** | Large, multiple components | 2-4 hours |
+| **8** | Very large, needs splitting | 4-8 hours |
+| **13** | Epic-sized, must decompose | > 8 hours (split required) |
+
+**Rules:**
+- Estimate independently, then discuss (Planning Poker pattern)
+- 13-point stories **must** be split before sprint commitment
+- Re-estimate after learning (if scope changes, update the estimate)
+- Track velocity over time (average points per sprint)
+
+### 9.5 Definition of Done (DoD)
+
+A story is **done** when ALL criteria are met:
+
+| Category | Criteria |
+|---|---|
+| **Code** | ✅ Implements acceptance criteria |
+| | ✅ All tests pass (unit + integration) |
+| | ✅ No lint errors |
+| | ✅ No type errors |
+| | ✅ Builds cleanly |
+| | ✅ Code reviewed (self-review at minimum) |
+| **Documentation** | ✅ User story verified against acceptance criteria |
+| | ✅ DECISIONS.md updated if architectural choices made |
+| | ✅ ROADMAP.md updated if scope changed |
+| **Accessibility** | ✅ WCAG 2.2 AA compliance verified |
+| | ✅ Keyboard navigable |
+| | ✅ Screen reader tested |
+| **Performance** | ✅ No regressions from baseline |
+| | ✅ Animations respect prefers-reduced-motion |
+| **Git** | ✅ Commits follow message format |
+| | ✅ No debug artifacts |
+| | ✅ Branch is up-to-date with main |
+
+**When something fails DoD:** It goes back to "In Progress" — not to "Done" with a note.
+
+### 9.6 Sprint Backlog Management
+
+**Backlog Grooming (ongoing):**
+- Refine stories weekly (or before each sprint)
+- Break epics into smaller stories
+- Add acceptance criteria to vague stories
+- Remove stale/irrelevant items
+- Re-prioritize based on changing needs
+
+**Sprint Backlog (fixed during sprint):**
+- Only the developer adds items to active sprint
+- New urgent items go to next sprint (unless truly critical)
+- Completed items move to "Done" only after DoD pass
+
+### 9.7 Sprint Retrospective Format
+
+At end of each sprint, answer:
+
+```
+── Sprint Retrospective ─────────────────────────────────────
+  Sprint: [N]
+  Date:   [YYYY-MM-DD]
+
+  What went well:
+    - [Thing 1]
+    - [Thing 2]
+
+  What could improve:
+    - [Thing 1]
+    - [Thing 2]
+
+  Action items for next sprint:
+    - [Action 1 — owner — deadline]
+    - [Action 2 — owner — deadline]
+
+  Velocity: [X] points completed / [Y] points committed
+─────────────────────────────────────────────────────────────
+```
+
+**Log retro outcomes in DECISIONS.md → Process Improvements**
+
+### 9.8 Integration with Work Loop (8.2)
+
+The user story and work decomposition work together:
+
+```
+Sprint Goal: "Enable cooperative onboarding"
+  │
+  ├── Story: Cooperative Profile Setup [5 pts]
+  │     ├── Unit 1: Route structure + test
+  │     ├── Unit 2: Form component + test
+  │     ├── Unit 3: Validation logic + test
+  │     └── Unit 4: Submit handler + integration test
+  │
+  ├── Story: Role Selection [3 pts]
+  │     ├── Unit 1: Role enum + constants
+  │     ├── Unit 2: Role selector component + test
+  │     └── Unit 3: Persist role selection + test
+  │
+  └── Story: Onboarding Wizard Layout [5 pts]
+        ├── Unit 1: Step navigation component + test
+        ├── Unit 2: Responsive layout + test
+        └── Unit 3: Progress indicator + test
+```
+
+**Flow:**
+1. Sprint Planning → Select stories from backlog
+2. For each story: Present user story → Decompose into units
+3. For each unit: Test-first → Implement → Verify → Surface
+4. After all units: Verify story against DoD
+5. Sprint Review → Demo, gather feedback
+6. Sprint Retrospective → Improve process
+
+---
+
+## 10. End-of-Session Checklist
 
 Before ending any substantial work session, run through:
 

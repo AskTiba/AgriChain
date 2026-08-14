@@ -7,11 +7,12 @@ export const Route = createFileRoute('/onboarding')({
 })
 
 interface OnboardingProps {
-  onSubmit?: (values: { coopName: string; region: string }) => void
+  onSubmit?: (values: { coopName: string; region: string }) => Promise<void> | void
 }
 
 export function Onboarding({ onSubmit }: OnboardingProps) {
   const [submitted, setSubmitted] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const form = useForm({
     defaultValues: {
@@ -19,9 +20,15 @@ export function Onboarding({ onSubmit }: OnboardingProps) {
       region: '',
     },
     onSubmit: async ({ value }) => {
-      onSubmit?.(value)
-      setSubmitted(true)
-      form.reset()
+      setError(null)
+      setSubmitted(false)
+      try {
+        await onSubmit?.(value)
+        setSubmitted(true)
+        form.reset()
+      } catch (err) {
+        setError('Failed to save profile. Please try again.')
+      }
     },
   })
 
@@ -46,6 +53,16 @@ export function Onboarding({ onSubmit }: OnboardingProps) {
           className="mb-6 rounded-[var(--radius-lg)] border border-[var(--color-success)]/20 bg-[var(--color-success)]/10 p-4 text-[var(--color-success)]"
         >
           Profile saved successfully.
+        </div>
+      )}
+
+      {error && (
+        <div
+          role="alert"
+          aria-live="assertive"
+          className="mb-6 rounded-[var(--radius-lg)] border border-[var(--color-danger)]/20 bg-[var(--color-danger)]/10 p-4 text-[var(--color-danger)]"
+        >
+          {error}
         </div>
       )}
 
