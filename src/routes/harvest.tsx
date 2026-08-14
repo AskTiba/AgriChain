@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useForm } from '@tanstack/react-form'
 import { useState } from 'react'
+import { HarvestLogList } from '../components/harvest-log-list'
 
 export const Route = createFileRoute('/harvest')({
   component: Harvest,
@@ -23,19 +24,22 @@ const QUALITY_GRADES = [
 ]
 
 interface HarvestEntry {
+  id: string
   cropType: string
   qualityGrade: string
   quantity: number
   fieldId: string
+  timestamp: string
 }
 
 interface HarvestProps {
-  onSubmit?: (values: HarvestEntry) => Promise<void> | void
+  onSubmit?: (values: Omit<HarvestEntry, 'id' | 'timestamp'>) => Promise<void> | void
 }
 
 export function Harvest({ onSubmit }: HarvestProps) {
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [entries, setEntries] = useState<HarvestEntry[]>([])
 
   const form = useForm({
     defaultValues: {
@@ -49,6 +53,12 @@ export function Harvest({ onSubmit }: HarvestProps) {
       setSubmitted(false)
       try {
         await onSubmit?.(value)
+        const newEntry: HarvestEntry = {
+          ...value,
+          id: crypto.randomUUID(),
+          timestamp: new Date().toISOString(),
+        }
+        setEntries((prev) => [newEntry, ...prev])
         setSubmitted(true)
         form.reset()
       } catch (err) {
@@ -279,6 +289,13 @@ export function Harvest({ onSubmit }: HarvestProps) {
             </button>
           </div>
         </form>
+      </section>
+
+      <section className="mt-8" aria-label="Harvest entries">
+        <h2 className="mb-4 text-lg font-semibold text-[var(--color-text)]">
+          Recent Entries
+        </h2>
+        <HarvestLogList entries={entries} />
       </section>
     </div>
   )
