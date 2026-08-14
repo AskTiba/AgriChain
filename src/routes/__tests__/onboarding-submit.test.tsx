@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { Onboarding } from '../onboarding'
 
@@ -11,8 +11,12 @@ describe('Onboarding Form Submission', () => {
 
     await user.type(screen.getByLabelText(/cooperative name/i), 'Green Valley Farmers')
     await user.type(screen.getByLabelText(/region/i), 'Western Province')
+    await user.click(screen.getByRole('button', { name: /next/i }))
+
     await user.click(screen.getByRole('radio', { name: /admin/i }))
-    await user.click(screen.getByRole('button', { name: /save profile/i }))
+    await user.click(screen.getByRole('button', { name: /next/i }))
+
+    await user.click(screen.getByRole('button', { name: /submit/i }))
 
     expect(onSubmit).toHaveBeenCalledWith({
       coopName: 'Green Valley Farmers',
@@ -26,9 +30,10 @@ describe('Onboarding Form Submission', () => {
     const onSubmit = vi.fn()
     render(<Onboarding onSubmit={onSubmit} />)
 
-    await user.click(screen.getByRole('button', { name: /save profile/i }))
+    await user.click(screen.getByRole('button', { name: /next/i }))
 
     expect(onSubmit).not.toHaveBeenCalled()
+    expect(screen.getByText('Step 1 of 3')).toBeInTheDocument()
   })
 
   it('shows success message after successful submission', async () => {
@@ -38,8 +43,10 @@ describe('Onboarding Form Submission', () => {
 
     await user.type(screen.getByLabelText(/cooperative name/i), 'Green Valley Farmers')
     await user.type(screen.getByLabelText(/region/i), 'Western Province')
+    await user.click(screen.getByRole('button', { name: /next/i }))
     await user.click(screen.getByRole('radio', { name: /admin/i }))
-    await user.click(screen.getByRole('button', { name: /save profile/i }))
+    await user.click(screen.getByRole('button', { name: /next/i }))
+    await user.click(screen.getByRole('button', { name: /submit/i }))
 
     expect(screen.getByText(/profile saved successfully/i)).toBeInTheDocument()
   })
@@ -54,10 +61,14 @@ describe('Onboarding Form Submission', () => {
 
     await user.type(nameInput, 'Green Valley Farmers')
     await user.type(regionInput, 'Western Province')
+    await user.click(screen.getByRole('button', { name: /next/i }))
     await user.click(screen.getByRole('radio', { name: /admin/i }))
-    await user.click(screen.getByRole('button', { name: /save profile/i }))
+    await user.click(screen.getByRole('button', { name: /next/i }))
+    await user.click(screen.getByRole('button', { name: /submit/i }))
 
-    expect(nameInput).toHaveValue('')
-    expect(regionInput).toHaveValue('')
+    await waitFor(() => {
+      expect(screen.getByLabelText(/cooperative name/i)).toHaveValue('')
+    })
+    expect(screen.getByLabelText(/region/i)).toHaveValue('')
   })
 })

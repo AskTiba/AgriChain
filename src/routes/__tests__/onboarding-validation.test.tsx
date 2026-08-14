@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { Onboarding } from '../onboarding'
 
@@ -9,20 +9,19 @@ describe('Onboarding Form Validation', () => {
     render(<Onboarding />)
 
     const nameInput = screen.getByLabelText(/cooperative name/i)
-    const submitButton = screen.getByRole('button', { name: /save profile/i })
 
-    await user.click(submitButton)
+    await user.click(screen.getByRole('button', { name: /next/i }))
 
     expect(screen.getByText(/cooperative name is required/i)).toBeInTheDocument()
+    expect(nameInput).toHaveAttribute('aria-invalid', 'true')
   })
 
   it('shows error when region is empty on submit', async () => {
     const user = userEvent.setup()
     render(<Onboarding />)
 
-    const submitButton = screen.getByRole('button', { name: /save profile/i })
-
-    await user.click(submitButton)
+    await user.type(screen.getByLabelText(/cooperative name/i), 'Green Valley')
+    await user.click(screen.getByRole('button', { name: /next/i }))
 
     expect(screen.getByText(/region is required/i)).toBeInTheDocument()
   })
@@ -32,24 +31,22 @@ describe('Onboarding Form Validation', () => {
     render(<Onboarding />)
 
     const nameInput = screen.getByLabelText(/cooperative name/i)
-    const submitButton = screen.getByRole('button', { name: /save profile/i })
 
-    await user.click(submitButton)
+    await user.click(screen.getByRole('button', { name: /next/i }))
     expect(screen.getByText(/cooperative name is required/i)).toBeInTheDocument()
 
     await user.type(nameInput, 'Green Valley')
-    expect(screen.queryByText(/cooperative name is required/i)).not.toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.queryByText(/cooperative name is required/i)).not.toBeInTheDocument()
+    })
   })
 
-  it('prevents form submission when fields are invalid', async () => {
+  it('prevents navigation when fields are invalid', async () => {
     const user = userEvent.setup()
-    const onSubmit = vi.fn()
-    render(<Onboarding onSubmit={onSubmit} />)
+    render(<Onboarding />)
 
-    const submitButton = screen.getByRole('button', { name: /save profile/i })
+    await user.click(screen.getByRole('button', { name: /next/i }))
 
-    await user.click(submitButton)
-
-    expect(onSubmit).not.toHaveBeenCalled()
+    expect(screen.getByText('Step 1 of 3')).toBeInTheDocument()
   })
 })

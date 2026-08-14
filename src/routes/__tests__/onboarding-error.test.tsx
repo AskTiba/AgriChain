@@ -11,8 +11,10 @@ describe('Onboarding Error States', () => {
 
     await user.type(screen.getByLabelText(/cooperative name/i), 'Green Valley Farmers')
     await user.type(screen.getByLabelText(/region/i), 'Western Province')
+    await user.click(screen.getByRole('button', { name: /next/i }))
     await user.click(screen.getByRole('radio', { name: /admin/i }))
-    await user.click(screen.getByRole('button', { name: /save profile/i }))
+    await user.click(screen.getByRole('button', { name: /next/i }))
+    await user.click(screen.getByRole('button', { name: /submit/i }))
 
     expect(screen.getByRole('alert')).toHaveTextContent(/failed to save profile/i)
   })
@@ -27,8 +29,10 @@ describe('Onboarding Error States', () => {
 
     await user.type(nameInput, 'Green Valley Farmers')
     await user.type(regionInput, 'Western Province')
+    await user.click(screen.getByRole('button', { name: /next/i }))
     await user.click(screen.getByRole('radio', { name: /admin/i }))
-    await user.click(screen.getByRole('button', { name: /save profile/i }))
+    await user.click(screen.getByRole('button', { name: /next/i }))
+    await user.click(screen.getByRole('button', { name: /submit/i }))
 
     expect(nameInput).toHaveValue('Green Valley Farmers')
     expect(regionInput).toHaveValue('Western Province')
@@ -43,12 +47,14 @@ describe('Onboarding Error States', () => {
 
     await user.type(screen.getByLabelText(/cooperative name/i), 'Green Valley Farmers')
     await user.type(screen.getByLabelText(/region/i), 'Western Province')
+    await user.click(screen.getByRole('button', { name: /next/i }))
     await user.click(screen.getByRole('radio', { name: /admin/i }))
-    await user.click(screen.getByRole('button', { name: /save profile/i }))
+    await user.click(screen.getByRole('button', { name: /next/i }))
+    await user.click(screen.getByRole('button', { name: /submit/i }))
 
     expect(screen.getByRole('alert')).toHaveTextContent(/failed to save profile/i)
 
-    await user.click(screen.getByRole('button', { name: /save profile/i }))
+    await user.click(screen.getByRole('button', { name: /submit/i }))
 
     expect(screen.queryByText(/failed to save profile/i)).not.toBeInTheDocument()
     expect(screen.getByText(/profile saved successfully/i)).toBeInTheDocument()
