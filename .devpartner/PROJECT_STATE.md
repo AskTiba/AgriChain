@@ -24,12 +24,13 @@
   - `6f6f020` feat: add harvest log list with table display
   - `18dbd33` feat: add warehouse capacity visualization with animated meters
   - `48328c6` feat: add vehicle ledger with table and add form
+  - `2af8245` feat: add shipment assignment with vehicle selection and harvest mapping
 
 ## In Progress
 - Sprint 3: Logistics & Transport Matchmaking
   - Story: Vehicle Ledger [5 pts] ✓
-  - Story: Shipment Assignment [5 pts] — next
-  - Story: Shareable Manifests [3 pts]
+  - Story: Shipment Assignment [5 pts] ✓
+  - Story: Shareable Manifests [3 pts] ✓
 
 ## Blocked / Issues
 - ESLint not installed (tech debt)
