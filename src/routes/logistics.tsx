@@ -1,8 +1,16 @@
 import { createFileRoute } from '@tanstack/react-router'
+import { WarehouseCapacity } from '../components/warehouse-capacity'
 
 export const Route = createFileRoute('/logistics')({
   component: Logistics,
 })
+
+const MOCK_WAREHOUSES = [
+  { id: 'W1', name: 'Warehouse A', used: 780, total: 1000 },
+  { id: 'W2', name: 'Warehouse B', used: 450, total: 1000 },
+  { id: 'W3', name: 'Warehouse C', used: 920, total: 1000 },
+  { id: 'W4', name: 'Warehouse D', used: 310, total: 1000 },
+]
 
 function Logistics() {
   return (
@@ -23,12 +31,7 @@ function Logistics() {
         <h2 className="mb-6 text-xl font-semibold text-[var(--color-text)]">
           Warehouse Capacity
         </h2>
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 stagger-children">
-          <CapacityCard name="Warehouse A" capacity={78} />
-          <CapacityCard name="Warehouse B" capacity={45} />
-          <CapacityCard name="Warehouse C" capacity={92} />
-          <CapacityCard name="Warehouse D" capacity={31} />
-        </div>
+        <WarehouseCapacity warehouses={MOCK_WAREHOUSES} />
       </section>
 
       <section
@@ -42,49 +45,6 @@ function Logistics() {
           Drag-and-drop shipment assignment will be built here.
         </p>
       </section>
-    </div>
-  )
-}
-
-function CapacityCard({ name, capacity }: { name: string; capacity: number }) {
-  const isHigh = capacity >= 85
-  const barColor = isHigh ? 'var(--color-danger)' : 'var(--color-primary)'
-
-  return (
-    <div
-      className="animate-fade-in-up rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-surface-elevated)] p-6 shadow-sm"
-      role="article"
-      aria-label={`${name}: ${capacity}% full`}
-    >
-      <div className="mb-3 flex items-center justify-between">
-        <span className="text-sm font-medium text-[var(--color-text-muted)]">
-          {name}
-        </span>
-        {isHigh && (
-          <span className="rounded-full bg-[var(--color-danger)]/10 px-2 py-0.5 text-xs font-medium text-[var(--color-danger)]">
-            Nearly Full
-          </span>
-        )}
-      </div>
-      <p
-        className="mb-4 font-bold text-[var(--color-text)]"
-        style={{ fontSize: 'clamp(1.5rem, 3vw + 0.5rem, 2.25rem)' }}
-      >
-        {capacity}%
-      </p>
-      <div
-        className="h-2 w-full overflow-hidden rounded-full bg-[var(--color-border-subtle)]"
-        role="progressbar"
-        aria-valuenow={capacity}
-        aria-valuemin={0}
-        aria-valuemax={100}
-        aria-label={`${name} capacity`}
-      >
-        <div
-          className="h-full rounded-full transition-all duration-1000 ease-out"
-          style={{ width: `${capacity}%`, backgroundColor: barColor }}
-        />
-      </div>
     </div>
   )
 }
