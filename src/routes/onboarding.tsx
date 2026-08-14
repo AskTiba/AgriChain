@@ -1,5 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useForm } from '@tanstack/react-form'
+import { useState } from 'react'
 
 export const Route = createFileRoute('/onboarding')({
   component: Onboarding,
@@ -10,6 +11,8 @@ interface OnboardingProps {
 }
 
 export function Onboarding({ onSubmit }: OnboardingProps) {
+  const [submitted, setSubmitted] = useState(false)
+
   const form = useForm({
     defaultValues: {
       coopName: '',
@@ -17,6 +20,8 @@ export function Onboarding({ onSubmit }: OnboardingProps) {
     },
     onSubmit: async ({ value }) => {
       onSubmit?.(value)
+      setSubmitted(true)
+      form.reset()
     },
   })
 
@@ -33,6 +38,16 @@ export function Onboarding({ onSubmit }: OnboardingProps) {
           Set up your cooperative profile to get started.
         </p>
       </section>
+
+      {submitted && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="mb-6 rounded-[var(--radius-lg)] border border-[var(--color-success)]/20 bg-[var(--color-success)]/10 p-4 text-[var(--color-success)]"
+        >
+          Profile saved successfully.
+        </div>
+      )}
 
       <form
         aria-label="Cooperative Profile"
