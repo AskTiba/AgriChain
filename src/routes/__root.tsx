@@ -148,6 +148,12 @@ function RootDocument({ children }: { children: React.ReactNode }) {
                 >
                   Logistics
                 </Link>
+                <Link
+                  to="/onboarding"
+                  className="text-sm font-medium text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-primary)] [&.active]:text-[var(--color-primary)]"
+                >
+                  Onboarding
+                </Link>
               </nav>
 
               <button
