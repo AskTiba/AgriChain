@@ -1,0 +1,33 @@
+# dependencies
+node_modules
+.pnpm-store
+
+# build
+dist
+.turbo
+*.timestamp_*.js
+
+# generated
+src/routeTree.gen.ts
+
+# environment
+.env
+.env.*
+!.env.example
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# debug
+npm-debug.log*
+pnpm-debug.log*
+
+# typescript
+*.tsbuildinfo
