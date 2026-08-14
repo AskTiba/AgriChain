@@ -4,18 +4,14 @@
 - TanStack Start project scaffolded with React Query, Tailwind v4
 - Root layout with sticky nav, theme toggle (light/dark/system), skip link, footer
 - Dashboard page with stat cards and quick action cards
-- Harvest logging page with offline status banner
-- Logistics page with warehouse capacity cards and progress bars
-- Onboarding page with cooperative profile form (name + region inputs)
-- Design token system (CSS custom properties) for light/dark themes
-- Global CSS with prefers-reduced-motion fallbacks, focus-visible rings
 - Onboarding wizard with 3 steps: Profile → Role → Review
 - Role selector with 4 options (Admin, Co-op Manager, Driver, Buyer)
-- Step-level validation with error banner and aria-invalid on fields
-- Back navigation preserves form data
-- Review step shows all data before submission
-- Error states with retry for failed submissions
-- Form reset after successful submission
+- Harvest log form with crop type, quality grade, quantity, field ID
+- Harvest log list with table display and empty state
+- Warehouse capacity visualization with animated meters and color-coded status
+- Vehicle ledger with table and add vehicle form
+- Design token system (CSS custom properties) for light/dark themes
+- Global CSS with prefers-reduced-motion fallbacks, focus-visible rings
 - Git repo initialized
   - `330e396` feat: scaffold TanStack Start project with design tokens
   - `681861c` feat: add onboarding route with cooperative profile form
@@ -24,15 +20,20 @@
   - `dafe8b5` feat: add error states for failed profile submission
   - `da69d62` feat: add role selection to onboarding form
   - `9dc4056` feat: add onboarding wizard layout with step navigation
+  - `a205dd3` feat: add harvest log form with validation and submit handler
+  - `6f6f020` feat: add harvest log list with table display
+  - `18dbd33` feat: add warehouse capacity visualization with animated meters
+  - `48328c6` feat: add vehicle ledger with table and add form
 
 ## In Progress
-- Sprint 1: Multi-Tenant Configuration & Onboarding
-  - Story: Cooperative Profile Setup [5 pts] ✓
-  - Story: Role Selection [3 pts] ✓
-  - Story: Onboarding Wizard Layout [5 pts] ✓
+- Sprint 3: Logistics & Transport Matchmaking
+  - Story: Vehicle Ledger [5 pts] ✓
+  - Story: Shipment Assignment [5 pts] — next
+  - Story: Shareable Manifests [3 pts]
 
 ## Blocked / Issues
-- ESLint not installed (tech debt, add next session)
+- ESLint not installed (tech debt)
+- Offline caching not implemented (tech debt from Milestone 2)
 
 ## Key Architectural Facts
 - **Framework:** TanStack Start (SSR + Server Functions)

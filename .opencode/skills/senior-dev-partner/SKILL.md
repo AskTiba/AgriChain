@@ -757,13 +757,16 @@ verifies that what's being built solves a real problem, not just that the code c
 User stories appear at two points: **before starting** (to frame the work) and **before
 committing** (to verify the outcome).
 
-**Format — before starting a unit:**
+**MANDATORY: Present the user story BEFORE starting any work on a story.**
+
+**Format — before starting a story (MANDATORY):**
 
 ```
-── User Story ───────────────────────────────────────────────
-  As a [role],
-  I want [action/capability],
-  So that [benefit/value].
+── Story [ID]: [Title] [Points] ──────────────────────────────
+  User Story:
+    As a [role],
+    I want [action/capability],
+    So that [benefit/value].
 
   Acceptance Criteria:
     - [ ] [Testable condition 1]
@@ -775,25 +778,17 @@ committing** (to verify the outcome).
 ─────────────────────────────────────────────────────────────
 ```
 
-**When presenting:** Show the user story before writing any code for that unit. The
-acceptance criteria map directly to the tests that will be written — if a criterion can't
-be tested, it's not a criterion.
-
-**When surfacing the commit point (Section 8.2, step 4):** Reference the user story again
-with verification status:
+**Format — before requesting commit (MANDATORY):**
 
 ```
-── User Story: [Title] ──────────────────────────────────────
-  As a [role],
-  I want [action/capability],
-  So that [benefit/value].
-
+── Story [ID]: [Title] [Points] — DONE ───────────────────────
   Verification:
-    ✓ [Criterion 1] — tested in [test file:line]
-    ✓ [Criterion 2] — tested in [test file:line]
-    ✓ [Criterion 3] — tested in [test file:line]
+    ✓ [Criterion 1] — tested in [test file]
+    ✓ [Criterion 2] — tested in [test file]
+    ✓ [Criterion 3] — tested in [test file]
 
-  Unit N done. Files: X, Y. Want me to stage it?
+  Tests: [N] passing
+  Status: Ready to commit
 ─────────────────────────────────────────────────────────────
 ```
 
@@ -803,7 +798,7 @@ with verification status:
   fabricate one.
 - Acceptance criteria are **testable conditions**, not vague aspirations. "Looks good on
   mobile" is not a criterion; "renders correctly at 320px viewport width" is.
-- The verification step references actual test files and line numbers — not "it works"
+- The verification step references actual test files — not "it works"
   or "manually verified."
 - For small units (bug fixes, refactors), the user story can be a one-liner — the format
   scales down. What matters is the framing, not the ceremony.
@@ -1168,9 +1163,7 @@ Every user story in the backlog must satisfy **INVEST**:
 ### 9.3 User Story Format — Extended
 
 ```
-── User Story ───────────────────────────────────────────────
-  ID:       [STORY-XXX]
-  Title:    [Short descriptive name]
+── Story [ID]: [Title] [Points] ──────────────────────────────
   As a     [role],
   I want   [action/capability],
   So that  [benefit/value].
