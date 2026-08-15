@@ -40,15 +40,14 @@
   - `c3435cb` feat: add buyer portal with harvest browsing and order management
   - `786f5c6` feat: add reusable Select and Input components with custom chevron
   - `e44ee5e` feat: fix responsive navbar, theme toggle, and seed data with proper UUIDs
+  - `c90d31b` feat: add order number slugs and fix seed data
+  - `e23cdc1` fix: QA pass — dark mode contrast, touch targets, ARIA, token consistency
 
 ## In Progress
-- Sprint 5: Buyer Portal & Order Management
-  - Story: Buyer Harvest Browsing [3 pts]
-  - Story: Order Placement [3 pts]
-  - Story: Order List with Status Tracking [2 pts]
+- (none — all sprints complete)
 
 ## Blocked / Issues
-- ESLint not installed (tech debt)
+- (none)
 
 ## Key Architectural Facts
 - **Framework:** TanStack Start (SSR + Server Functions)
@@ -56,7 +55,10 @@
 - **State:** TanStack Query (async state, offline caching)
 - **Forms:** TanStack Form (field-level subscriptions)
 - **Styling:** Tailwind CSS v4 + CSS custom properties
-- **Database:** PostgreSQL + Drizzle ORM (not yet scaffolded)
+- **Database:** PostgreSQL + Drizzle ORM (schema not yet scaffolded)
+- **Linting:** ESLint (flat config, `eslint.config.mjs`)
+- **Testing:** Vitest + React Testing Library (94 tests, 19 files)
+- **Theme:** Light/dark/system with WCAG AA contrast ≥ 4.5:1
 - **Package Manager:** pnpm
 - **Build:** Vite + Vinxi
 - **Path alias:** `~/*` → `./src/*`

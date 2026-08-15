@@ -7,7 +7,7 @@ export const Route = createFileRoute('/buyer')({
   component: BuyerPage,
 })
 
-function BuyerPage() {
+export function BuyerPage() {
   const { data: harvests = [], isFetching } = useHarvests()
   const addOrder = useAddOrder()
   const [selectedHarvest, setSelectedHarvest] = useState<string | null>(null)

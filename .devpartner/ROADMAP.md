@@ -30,7 +30,7 @@ A commercial-grade agricultural logistics and supply chain coordination platform
 - **Accessibility:** WCAG 2.2 Level AA full compliance
 - **Viewport support:** 320px to ultrawide, zero horizontal overflow
 - **Offline:** Harvest logging functional without network ✓
-- **Theme:** Light, dark, and system modes with per-theme contrast ≥ 4.5:1
+- **Theme:** Light, dark, and system modes with per-theme contrast ≥ 4.5:1 ✓
 
 ## Tech Debt & Risk Register
-- ESLint not installed
+- (none open)
