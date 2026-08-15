@@ -13,6 +13,7 @@
 - Shipment assignment with vehicle selection and harvest mapping
 - Shareable logistics manifests with base64 URL encoding and read-only view
 - Offline caching with TanStack Query PersistQueryClient (localStorage)
+- Premium UI components (Select, Input) with macOS native styling
 - Design token system (CSS custom properties) for light/dark themes
 - Global CSS with prefers-reduced-motion fallbacks, focus-visible rings
 - Git repo initialized
@@ -29,17 +30,16 @@
   - `48328c6` feat: add vehicle ledger with table and add form
   - `2af8245` feat: add shipment assignment with vehicle selection and harvest mapping
   - `ebe2fc0` feat: add shareable manifests with base64 URL encoding and read-only view
-  - `2af8245` feat: add shipment assignment with vehicle selection and harvest mapping
+  - `234de78` feat: redesign Select and Input to macOS native pop-up button style
 
 ## In Progress
-- Sprint 3: Logistics & Transport Matchmaking
-  - Story: Vehicle Ledger [5 pts] ✓
-  - Story: Shipment Assignment [5 pts] ✓
-  - Story: Shareable Manifests [3 pts] ✓
+- Sprint 5: Buyer Portal & Order Management
+  - Story: Buyer Harvest Browsing [3 pts]
+  - Story: Order Placement [3 pts]
+  - Story: Order List with Status Tracking [2 pts]
 
 ## Blocked / Issues
 - ESLint not installed (tech debt)
-- Offline caching not implemented (tech debt from Milestone 2)
 
 ## Key Architectural Facts
 - **Framework:** TanStack Start (SSR + Server Functions)

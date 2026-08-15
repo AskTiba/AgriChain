@@ -155,6 +155,18 @@ function RootDocument({ children }: { children: React.ReactNode }) {
                     Logistics
                   </Link>
                   <Link
+                    to="/buyer"
+                    className="cursor-pointer text-sm font-medium text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-primary)] [&.active]:text-[var(--color-primary)]"
+                  >
+                    Buyer
+                  </Link>
+                  <Link
+                    to="/orders"
+                    className="cursor-pointer text-sm font-medium text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-primary)] [&.active]:text-[var(--color-primary)]"
+                  >
+                    Orders
+                  </Link>
+                  <Link
                     to="/onboarding"
                     className="cursor-pointer text-sm font-medium text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-primary)] [&.active]:text-[var(--color-primary)]"
                   >

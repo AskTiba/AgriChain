@@ -1,0 +1,150 @@
+import { createFileRoute } from '@tanstack/react-router'
+import { useHarvests } from '~/app/hooks/use-harvests'
+import { useAddOrder } from '~/app/hooks/use-orders'
+import { useState } from 'react'
+
+export const Route = createFileRoute('/buyer')({
+  component: BuyerPage,
+})
+
+function BuyerPage() {
+  const { data: harvests = [], isLoading } = useHarvests()
+  const addOrder = useAddOrder()
+  const [selectedHarvest, setSelectedHarvest] = useState<string | null>(null)
+  const [orderQuantity, setOrderQuantity] = useState<number>(0)
+  const [buyerId] = useState(() => crypto.randomUUID())
+
+  const handlePlaceOrder = (harvestId: string) => {
+    const harvest = harvests.find((h) => h.id === harvestId)
+    if (!harvest || orderQuantity <= 0 || orderQuantity > harvest.quantity) return
+
+    addOrder.mutate({
+      harvestId,
+      buyerId,
+      quantity: orderQuantity,
+      status: 'pending',
+    })
+
+    setSelectedHarvest(null)
+    setOrderQuantity(0)
+  }
+
+  if (isLoading) {
+    return (
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <div className="animate-pulse space-y-4">
+          <div className="h-8 w-48 rounded bg-[var(--color-surface)]" />
+          <div className="h-64 rounded-lg bg-[var(--color-surface)]" />
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold text-[var(--color-text)]">
+          Available Harvests
+        </h1>
+        <p className="mt-2 text-[var(--color-text-muted)]">
+          Browse and order fresh produce from local cooperatives
+        </p>
+      </div>
+
+      {harvests.length === 0 ? (
+        <div className="rounded-lg border border-[var(--color-border-subtle)] bg-[var(--color-surface-elevated)] p-12 text-center shadow-sm">
+          <p className="text-[var(--color-text-muted)]">
+            No harvests available at the moment
+          </p>
+        </div>
+      ) : (
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {harvests.map((harvest) => (
+            <div
+              key={harvest.id}
+              className="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-elevated)] p-6 shadow-sm transition-shadow hover:shadow-md"
+            >
+              <div className="mb-4 flex items-start justify-between">
+                <div>
+                  <h3 className="text-lg font-semibold text-[var(--color-text)]">
+                    {harvest.cropType}
+                  </h3>
+                  <p className="text-sm text-[var(--color-text-muted)]">
+                    Field: {harvest.fieldId}
+                  </p>
+                </div>
+                <span className="inline-flex items-center rounded-full bg-[var(--color-primary)]/10 px-2.5 py-0.5 text-xs font-medium text-[var(--color-primary)]">
+                  {harvest.qualityGrade}
+                </span>
+              </div>
+
+              <div className="mb-4 space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-[var(--color-text-muted)]">Available</span>
+                  <span className="font-medium text-[var(--color-text)]">
+                    {harvest.quantity} kg
+                  </span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-[var(--color-text-muted)]">Logged</span>
+                  <span className="text-[var(--color-text)]">
+                    {new Date(harvest.timestamp).toLocaleDateString()}
+                  </span>
+                </div>
+              </div>
+
+              {selectedHarvest === harvest.id ? (
+                <div className="space-y-3">
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-[var(--color-text-muted)]">
+                      Quantity (kg)
+                    </label>
+                    <input
+                      type="number"
+                      min={1}
+                      max={harvest.quantity}
+                      value={orderQuantity}
+                      onChange={(e) => setOrderQuantity(Number(e.target.value))}
+                      className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-elevated)] px-3 py-2 text-sm text-[var(--color-text)] focus:border-[var(--color-primary)] focus:outline-none"
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handlePlaceOrder(harvest.id)}
+                      disabled={orderQuantity <= 0 || orderQuantity > harvest.quantity}
+                      className="flex-1 cursor-pointer rounded-lg bg-[var(--color-primary)] px-4 py-2 text-sm font-medium text-[var(--color-primary-foreground)] transition-colors hover:bg-[var(--color-primary-hover)] disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      Place Order
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedHarvest(null)
+                        setOrderQuantity(0)
+                      }}
+                      className="cursor-pointer rounded-lg border border-[var(--color-border)] px-4 py-2 text-sm font-medium text-[var(--color-text)] transition-colors hover:bg-[var(--color-surface)]"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedHarvest(harvest.id)
+                    setOrderQuantity(Math.min(10, harvest.quantity))
+                  }}
+                  className="w-full cursor-pointer rounded-lg border border-[var(--color-primary)] bg-[var(--color-primary)]/5 px-4 py-2 text-sm font-medium text-[var(--color-primary)] transition-colors hover:bg-[var(--color-primary)]/10"
+                >
+                  Order Now
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
