@@ -40,7 +40,7 @@ export function ShipmentAssignment({ harvests, vehicles, assigned, onAssign }: S
   return (
     <div className="space-y-6">
       <div className="overflow-x-auto rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-surface-elevated)] shadow-sm">
-        <table className="w-full text-left text-sm">
+        <table className="w-full text-left text-sm" aria-label="Unassigned harvests">
           <thead>
             <tr className="border-b border-[var(--color-border-subtle)] bg-[var(--color-surface)]">
               <th scope="col" className="px-4 py-3 font-medium text-[var(--color-text)]">Crop</th>
@@ -62,7 +62,7 @@ export function ShipmentAssignment({ harvests, vehicles, assigned, onAssign }: S
                         key={v.id}
                         type="button"
                         onClick={() => onAssign(h.id, v.id)}
-                        className="cursor-pointer rounded-[var(--radius-md)] border border-[var(--color-border)] px-3 py-1 text-xs font-medium text-[var(--color-text)] transition-colors hover:bg-[var(--color-primary)] hover:text-[var(--color-primary-foreground)]"
+                        className="inline-flex min-h-[44px] cursor-pointer items-center rounded-[var(--radius-md)] border border-[var(--color-border)] px-4 py-2 text-sm font-medium text-[var(--color-text)] transition-colors hover:bg-[var(--color-primary)] hover:text-[var(--color-primary-foreground)]"
                       >
                         {v.name}
                       </button>

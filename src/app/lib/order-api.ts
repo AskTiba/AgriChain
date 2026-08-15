@@ -10,8 +10,6 @@ export interface Order {
 }
 
 const STORAGE_KEY = 'agri-tech-orders'
-const SEED_VERSION_KEY = 'agri-tech-seed-version'
-const CURRENT_VERSION = '4'
 
 const defaultOrders: Order[] = [
   { id: '550e8400-e29b-41d4-a716-446655440001', orderNumber: 'ORD-000001', harvestId: 'h1', buyerId: 'buyer-001', quantity: 100, status: 'pending', createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(), updatedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString() },

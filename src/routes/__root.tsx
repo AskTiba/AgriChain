@@ -24,7 +24,8 @@ export const Route = createRootRouteWithContext<{
     meta: [
       { charSet: 'utf-8' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1, viewport-fit=cover' },
-      { name: 'theme-color', content: '#1E5E3A' },
+      { name: 'theme-color', content: '#1E5E3A', media: '(prefers-color-scheme: light)' },
+      { name: 'theme-color', content: '#141E15', media: '(prefers-color-scheme: dark)' },
       { title: 'Agri-Tech Co-op' },
     ],
     links: [
@@ -70,16 +71,14 @@ const themeScript = `
 `
 
 function RootDocument({ children }: { children: React.ReactNode }) {
-  const [mode, setMode] = React.useState<ThemeMode>('system')
+  const [mode, setMode] = React.useState<ThemeMode>(() => {
+    if (typeof window === 'undefined') return 'system'
+    return (localStorage.getItem('theme') as ThemeMode) || 'system'
+  })
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false)
 
   React.useEffect(() => {
     seedData()
-  }, [])
-
-  React.useEffect(() => {
-    const stored = localStorage.getItem('theme') as ThemeMode | null
-    setMode(stored || 'system')
   }, [])
 
   React.useEffect(() => {
@@ -164,7 +163,8 @@ function RootDocument({ children }: { children: React.ReactNode }) {
                     <button
                       onClick={cycleTheme}
                       aria-label={`Theme: ${mode}. Click to cycle.`}
-                      className="inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-surface)] hover:text-[var(--color-text)]"
+                      type="button"
+                      className="inline-flex min-h-[44px] min-w-[44px] cursor-pointer items-center justify-center rounded-[var(--radius-lg)] text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-surface)] hover:text-[var(--color-text)]"
                     >
                       {mode === 'system' ? (
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -196,7 +196,8 @@ function RootDocument({ children }: { children: React.ReactNode }) {
                       onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                       aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
                       aria-expanded={mobileMenuOpen}
-                      className="inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-surface)] hover:text-[var(--color-text)] md:hidden"
+                      type="button"
+                      className="inline-flex min-h-[44px] min-w-[44px] cursor-pointer items-center justify-center rounded-[var(--radius-lg)] text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-surface)] hover:text-[var(--color-text)] md:hidden"
                     >
                       {mobileMenuOpen ? (
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

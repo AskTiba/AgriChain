@@ -31,7 +31,7 @@ function OrderDetailPage() {
       <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="animate-pulse space-y-4">
           <div className="h-8 w-48 rounded bg-[var(--color-surface)]" />
-          <div className="h-64 rounded-lg bg-[var(--color-surface)]" />
+          <div className="h-64 rounded-[var(--radius-lg)] bg-[var(--color-surface)]" />
         </div>
       </div>
     )
@@ -40,7 +40,7 @@ function OrderDetailPage() {
   if (!order) {
     return (
       <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="rounded-lg border border-[var(--color-border-subtle)] bg-[var(--color-surface-elevated)] p-12 text-center shadow-sm">
+        <div className="rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-surface-elevated)] p-12 text-center shadow-sm">
           <p className="text-[var(--color-text-muted)]">
             Order not found
           </p>
@@ -66,7 +66,7 @@ function OrderDetailPage() {
         </Link>
       </div>
 
-      <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-elevated)] p-6 shadow-sm">
+      <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface-elevated)] p-6 shadow-sm">
         <div className="mb-6 flex items-start justify-between">
           <div>
             <h1 className="text-2xl font-bold text-[var(--color-text)]">
@@ -82,7 +82,7 @@ function OrderDetailPage() {
         </div>
 
         <div className="space-y-4">
-          <div className="rounded-lg border border-[var(--color-border-subtle)] bg-[var(--color-surface)] p-4">
+          <div className="rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-surface)] p-4">
             <h2 className="mb-3 text-sm font-semibold text-[var(--color-text)]">
               Harvest Information
             </h2>
@@ -108,7 +108,7 @@ function OrderDetailPage() {
             )}
           </div>
 
-          <div className="rounded-lg border border-[var(--color-border-subtle)] bg-[var(--color-surface)] p-4">
+          <div className="rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-surface)] p-4">
             <h2 className="mb-3 text-sm font-semibold text-[var(--color-text)]">
               Order Details
             </h2>
@@ -133,7 +133,7 @@ function OrderDetailPage() {
           </div>
 
           {order.status === 'confirmed' && (
-            <div className="rounded-lg border border-[var(--color-info)]/20 bg-[var(--color-info)]/5 p-4">
+            <div className="rounded-[var(--radius-lg)] border border-[var(--color-info)]/20 bg-[var(--color-info)]/5 p-4">
               <h2 className="mb-2 text-sm font-semibold text-[var(--color-info)]">
                 Shipment Status
               </h2>
@@ -150,7 +150,7 @@ function OrderDetailPage() {
           )}
 
           {order.status === 'delivered' && (
-            <div className="rounded-lg border border-[var(--color-success)]/20 bg-[var(--color-success)]/5 p-4">
+            <div className="rounded-[var(--radius-lg)] border border-[var(--color-success)]/20 bg-[var(--color-success)]/5 p-4">
               <h2 className="mb-2 text-sm font-semibold text-[var(--color-success)]">
                 Delivery Complete
               </h2>

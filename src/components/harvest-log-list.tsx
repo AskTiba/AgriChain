@@ -37,7 +37,7 @@ export function HarvestLogList({ entries }: HarvestLogListProps) {
 
   return (
     <div className="overflow-x-auto rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-surface-elevated)] shadow-sm">
-      <table className="w-full text-left text-sm">
+      <table className="w-full text-left text-sm" aria-label="Harvest log">
         <thead>
           <tr className="border-b border-[var(--color-border-subtle)] bg-[var(--color-surface)]">
             <th scope="col" className="px-4 py-3 font-medium text-[var(--color-text)]">Crop Type</th>

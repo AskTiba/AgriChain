@@ -34,7 +34,7 @@ export function Onboarding({ onSubmit }: OnboardingProps) {
         form.reset()
         setCurrentStep(0)
         setStepErrors({})
-      } catch (err) {
+      } catch {
         setError('Failed to save profile. Please try again.')
       }
     },
@@ -82,34 +82,35 @@ export function Onboarding({ onSubmit }: OnboardingProps) {
     )
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
+    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <section className="mb-12 animate-fade-in-up">
         <h1
           className="mb-4 font-bold text-[var(--color-text)]"
-          style={{ fontSize: 'clamp(1.75rem, 4vw + 0.75rem, 3rem)' }}
+          style={{ fontSize: 'clamp(1.25rem, 2vw + 0.75rem, 1.75rem)' }}
         >
           Onboarding
         </h1>
-        <p className="max-w-2xl text-lg text-[var(--color-text-muted)]">
+        <p className="max-w-2xl text-base text-[var(--color-text-muted)]">
           Set up your cooperative profile to get started.
         </p>
       </section>
 
-      {submitted && (
-        <div
-          role="status"
-          aria-live="polite"
-          className="mb-6 rounded-[var(--radius-lg)] border border-[var(--color-success)]/20 bg-[var(--color-success)]/10 p-4 text-[var(--color-success)]"
-        >
-          Profile saved successfully.
-        </div>
-      )}
+      <div className="mx-auto max-w-2xl">
+        {submitted && (
+          <div
+            role="status"
+            aria-live="polite"
+            className="mb-6 rounded-[var(--radius-lg)] border border-[var(--color-success)]/20 bg-[var(--color-success)]/10 p-4 text-[var(--color-success)]"
+          >
+            Profile saved successfully.
+          </div>
+        )}
 
-      {error && (
-        <div
-          role="alert"
-          aria-live="assertive"
-          className="mb-6 rounded-[var(--radius-lg)] border border-[var(--color-danger)]/20 bg-[var(--color-danger)]/10 p-4 text-[var(--color-danger)]"
+        {error && (
+          <div
+            role="alert"
+            aria-live="assertive"
+            className="mb-6 rounded-[var(--radius-lg)] border border-[var(--color-danger)]/20 bg-[var(--color-danger)]/10 p-4 text-[var(--color-danger)]"
         >
           {error}
         </div>
@@ -131,7 +132,7 @@ export function Onboarding({ onSubmit }: OnboardingProps) {
         >
           {currentStep === 0 && (
             <div className="space-y-6">
-              <h2 className="text-lg font-semibold text-[var(--color-text)]">
+              <h2 className="font-semibold text-[var(--color-text)]" style={{ fontSize: 'clamp(1.125rem, 1.5vw + 0.5rem, 1.5rem)' }}>
                 Cooperative Profile
               </h2>
 
@@ -195,7 +196,7 @@ export function Onboarding({ onSubmit }: OnboardingProps) {
 
           {currentStep === 1 && (
             <div className="space-y-6">
-              <h2 className="text-lg font-semibold text-[var(--color-text)]">
+              <h2 className="font-semibold text-[var(--color-text)]" style={{ fontSize: 'clamp(1.125rem, 1.5vw + 0.5rem, 1.5rem)' }}>
                 Select Your Role
               </h2>
 
@@ -225,7 +226,7 @@ export function Onboarding({ onSubmit }: OnboardingProps) {
 
           {currentStep === 2 && (
             <div className="space-y-6">
-              <h2 className="text-lg font-semibold text-[var(--color-text)]">
+              <h2 className="font-semibold text-[var(--color-text)]" style={{ fontSize: 'clamp(1.125rem, 1.5vw + 0.5rem, 1.5rem)' }}>
                 Review Your Profile
               </h2>
 
@@ -261,6 +262,7 @@ export function Onboarding({ onSubmit }: OnboardingProps) {
           )}
         </Wizard>
       </form>
+      </div>
     </div>
   )
 }

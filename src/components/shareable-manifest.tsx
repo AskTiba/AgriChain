@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useMemo } from 'react'
 
 interface ManifestEntry {
   vehicleName: string
@@ -49,13 +49,12 @@ function CopyIcon() {
 }
 
 export function ShareableManifest({ entries, onCopy }: ShareableManifestProps) {
-  const [url, setUrl] = useState('')
-
-  useEffect(() => {
+  const url = useMemo(() => {
     if (entries.length > 0 && typeof window !== 'undefined') {
       const encoded = encodeManifest(entries)
-      setUrl(`${window.location.origin}/manifest?manifest=${encoded}`)
+      return `${window.location.origin}/manifest?manifest=${encoded}`
     }
+    return ''
   }, [entries])
 
   if (entries.length === 0) {
@@ -74,7 +73,7 @@ export function ShareableManifest({ entries, onCopy }: ShareableManifestProps) {
   return (
     <div className="space-y-4">
       <div className="overflow-x-auto rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-surface-elevated)] shadow-sm">
-        <table className="w-full text-left text-sm">
+        <table className="w-full text-left text-sm" aria-label="Transport manifest">
           <thead>
             <tr className="border-b border-[var(--color-border-subtle)] bg-[var(--color-surface)]">
               <th scope="col" className="px-4 py-3 font-medium text-[var(--color-text)]">Vehicle</th>
@@ -103,7 +102,7 @@ export function ShareableManifest({ entries, onCopy }: ShareableManifestProps) {
       <button
         type="button"
         onClick={handleCopy}
-        className="inline-flex cursor-pointer items-center gap-2 rounded-[var(--radius-md)] bg-[var(--color-primary)] px-4 py-2 text-sm font-medium text-[var(--color-primary-foreground)] transition-colors hover:bg-[var(--color-primary-hover)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary)]"
+        className="inline-flex min-h-[44px] cursor-pointer items-center gap-2 rounded-[var(--radius-md)] bg-[var(--color-primary)] px-4 py-2 text-sm font-medium text-[var(--color-primary-foreground)] transition-colors hover:bg-[var(--color-primary-hover)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary)]"
       >
         <CopyIcon />
         Copy Manifest Link

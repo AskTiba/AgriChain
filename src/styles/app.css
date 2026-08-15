@@ -62,6 +62,13 @@
   --color-border: #3A4E3B;
   --color-border-subtle: #2A3D2B;
 
+  --color-success: #4ADE80;
+  --color-danger: #F87171;
+  --color-warning: #FBBF24;
+  --color-info: #60A5FA;
+  --color-secondary: #FBBF24;
+  --color-accent: #D97706;
+
   --color-overlay: rgba(240, 245, 241, 0.6);
   --color-focus-ring: #2E8F59;
 }

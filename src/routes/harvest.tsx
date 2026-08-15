@@ -55,31 +55,32 @@ export function Harvest({ onSubmit }: HarvestProps) {
         }
         setSubmitted(true)
         form.reset()
-      } catch (err) {
+      } catch {
         setError('Failed to log harvest. Please try again.')
       }
     },
   })
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
+    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <section className="mb-12 animate-fade-in-up">
         <h1
           className="mb-4 font-bold text-[var(--color-text)]"
-          style={{ fontSize: 'clamp(1.75rem, 4vw + 0.75rem, 3rem)' }}
+          style={{ fontSize: 'clamp(1.25rem, 2vw + 0.75rem, 1.75rem)' }}
         >
           Harvest Logging
         </h1>
-        <p className="max-w-2xl text-lg text-[var(--color-text-muted)]">
+        <p className="max-w-2xl text-base text-[var(--color-text-muted)]">
           Record yield entries, track quality grades, and manage harvest inventory from the field.
         </p>
       </section>
 
-      <div
-        className="mb-8 flex items-center gap-3 rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-surface)] p-4"
-        role="status"
-        aria-live="polite"
-      >
+      <div className="mx-auto max-w-2xl">
+        <div
+          className="mb-8 flex items-center gap-3 rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-surface)] p-4"
+          role="status"
+          aria-live="polite"
+        >
         <span className="h-3 w-3 rounded-full bg-[var(--color-success)]" aria-hidden="true" />
         <span className="text-sm text-[var(--color-text-muted)]">
           {isLoading ? 'Loading harvest data...' : 'Data persisted locally — works offline.'}
@@ -110,7 +111,7 @@ export function Harvest({ onSubmit }: HarvestProps) {
         aria-label="Log new harvest"
         className="rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-surface-elevated)] p-6 shadow-sm"
       >
-        <h2 className="mb-6 text-lg font-semibold text-[var(--color-text)]">
+        <h2 className="mb-6 font-semibold text-[var(--color-text)]" style={{ fontSize: 'clamp(1.125rem, 1.5vw + 0.5rem, 1.5rem)' }}>
           New Harvest Entry
         </h2>
 
@@ -222,9 +223,10 @@ export function Harvest({ onSubmit }: HarvestProps) {
           </div>
         </form>
       </section>
+      </div>
 
       <section className="mt-8" aria-label="Harvest entries">
-        <h2 className="mb-4 text-lg font-semibold text-[var(--color-text)]">
+        <h2 className="mb-4 font-semibold text-[var(--color-text)]" style={{ fontSize: 'clamp(1.125rem, 1.5vw + 0.5rem, 1.5rem)' }}>
           Recent Entries
         </h2>
         <HarvestLogList entries={entries} />

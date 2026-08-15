@@ -82,31 +82,31 @@ function Logistics() {
       <section className="mb-12 animate-fade-in-up">
         <h1
           className="mb-4 font-bold text-[var(--color-text)]"
-          style={{ fontSize: 'clamp(1.75rem, 4vw + 0.75rem, 3rem)' }}
+          style={{ fontSize: 'clamp(1.25rem, 2vw + 0.75rem, 1.75rem)' }}
         >
           Logistics & Transport
         </h1>
-        <p className="max-w-2xl text-lg text-[var(--color-text-muted)]">
+        <p className="max-w-2xl text-base text-[var(--color-text-muted)]">
           Match harvest batches to vehicles, manage driver assignments, and share logistics manifests.
         </p>
       </section>
 
       <section aria-label="Warehouse capacity" className="mb-12">
-        <h2 className="mb-6 text-xl font-semibold text-[var(--color-text)]">
+        <h2 className="mb-6 font-semibold text-[var(--color-text)]" style={{ fontSize: 'clamp(1.125rem, 1.5vw + 0.5rem, 1.5rem)' }}>
           Warehouse Capacity
         </h2>
         <WarehouseCapacity warehouses={MOCK_WAREHOUSES} />
       </section>
 
       <section aria-label="Vehicle ledger" className="mb-12">
-        <h2 className="mb-6 text-xl font-semibold text-[var(--color-text)]">
+        <h2 className="mb-6 font-semibold text-[var(--color-text)]" style={{ fontSize: 'clamp(1.125rem, 1.5vw + 0.5rem, 1.5rem)' }}>
           Vehicle Ledger
         </h2>
         <VehicleLedger vehicles={vehicles} onAdd={handleAddVehicle} />
       </section>
 
       <section aria-label="Shipment assignment" className="mb-12">
-        <h2 className="mb-6 text-xl font-semibold text-[var(--color-text)]">
+        <h2 className="mb-6 font-semibold text-[var(--color-text)]" style={{ fontSize: 'clamp(1.125rem, 1.5vw + 0.5rem, 1.5rem)' }}>
           Assign Shipments
         </h2>
         <ShipmentAssignment
@@ -120,7 +120,7 @@ function Logistics() {
       {manifestEntries.length > 0 && (
         <section aria-label="Share manifest" className="mb-12">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-semibold text-[var(--color-text)]">
+            <h2 className="font-semibold text-[var(--color-text)]" style={{ fontSize: 'clamp(1.125rem, 1.5vw + 0.5rem, 1.5rem)' }}>
               Share Manifest
             </h2>
             {copied && (

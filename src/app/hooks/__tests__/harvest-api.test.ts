@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach } from 'vitest'
 import { fetchHarvests, addHarvest, deleteHarvest } from '../../lib/harvest-api'
 
 const STORAGE_KEY = 'agri-tech-harvests'

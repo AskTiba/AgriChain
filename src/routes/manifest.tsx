@@ -52,7 +52,7 @@ function ManifestView() {
       <section className="mb-8">
         <h1
           className="mb-4 font-bold text-[var(--color-text)]"
-          style={{ fontSize: 'clamp(1.75rem, 4vw + 0.75rem, 3rem)' }}
+          style={{ fontSize: 'clamp(1.25rem, 2vw + 0.75rem, 1.75rem)' }}
         >
           Logistics Manifest
         </h1>

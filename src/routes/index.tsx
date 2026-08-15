@@ -10,11 +10,11 @@ function Home() {
       <section className="mb-12 animate-fade-in-up">
         <h1
           className="mb-4 font-bold text-[var(--color-text)]"
-          style={{ fontSize: 'clamp(1.75rem, 4vw + 0.75rem, 3rem)' }}
+          style={{ fontSize: 'clamp(1.25rem, 2vw + 0.75rem, 1.75rem)' }}
         >
           Agri-Tech Cooperative
         </h1>
-        <p className="max-w-2xl text-lg text-[var(--color-text-muted)]">
+        <p className="max-w-2xl text-base text-[var(--color-text-muted)]">
           Streamlining harvest logistics, transport coordination, and warehouse allocation for regional smallholder cooperatives.
         </p>
       </section>
@@ -29,7 +29,7 @@ function Home() {
       </section>
 
       <section aria-label="Quick actions" className="mb-12">
-        <h2 className="mb-6 text-xl font-semibold text-[var(--color-text)]">
+        <h2 className="mb-6 font-semibold text-[var(--color-text)]" style={{ fontSize: 'clamp(1.125rem, 1.5vw + 0.5rem, 1.5rem)' }}>
           Quick Actions
         </h2>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 stagger-children">

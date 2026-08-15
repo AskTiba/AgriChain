@@ -35,17 +35,20 @@ function OrdersPage() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-[var(--color-text)]">
+      <section className="mb-12">
+        <h1
+          className="font-bold text-[var(--color-text)]"
+          style={{ fontSize: 'clamp(1.25rem, 2vw + 0.75rem, 1.75rem)' }}
+        >
           Orders
         </h1>
-        <p className="mt-2 text-[var(--color-text-muted)]">
+        <p className="mt-2 text-base text-[var(--color-text-muted)]">
           Track and manage your orders
         </p>
-      </div>
+      </section>
 
       {isFetching && (
-        <div className="mb-4 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-elevated)] p-4 shadow-sm">
+        <div className="mb-4 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface-elevated)] p-4 shadow-sm" role="status" aria-live="polite">
           <div className="flex items-center gap-2">
             <div className="h-4 w-4 animate-spin rounded-full border-2 border-[var(--color-primary)] border-t-transparent" />
             <span className="text-sm text-[var(--color-text-muted)]">Refreshing orders...</span>
@@ -54,14 +57,14 @@ function OrdersPage() {
       )}
 
       {orders.length === 0 ? (
-        <div className="rounded-lg border border-[var(--color-border-subtle)] bg-[var(--color-surface-elevated)] p-12 text-center shadow-sm">
+        <div className="rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-surface-elevated)] p-12 text-center shadow-sm">
           <p className="text-[var(--color-text-muted)]">
             No orders yet. Browse available harvests to place your first order.
           </p>
         </div>
       ) : (
-        <div className="overflow-hidden rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-elevated)] shadow-sm">
-          <table className="min-w-full divide-y divide-[var(--color-border)]">
+        <div className="overflow-x-auto rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface-elevated)] shadow-sm">
+          <table className="min-w-full divide-y divide-[var(--color-border)]" aria-label="Orders">
             <thead className="bg-[var(--color-surface)]">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-[var(--color-text-muted)]">
@@ -117,7 +120,7 @@ function OrdersPage() {
                         <button
                           type="button"
                           onClick={() => handleStatusUpdate(order.id, 'confirmed')}
-                          className="cursor-pointer rounded-lg bg-[var(--color-info)] px-3 py-1 text-xs font-medium text-white transition-colors hover:bg-[var(--color-info)]/80"
+                          className="inline-flex min-h-[44px] cursor-pointer items-center rounded-[var(--radius-lg)] bg-[var(--color-info)] px-4 py-2 text-sm font-medium text-[var(--color-primary-foreground)] transition-colors hover:bg-[var(--color-info)]/80"
                         >
                           Confirm
                         </button>
@@ -126,7 +129,7 @@ function OrdersPage() {
                         <button
                           type="button"
                           onClick={() => handleStatusUpdate(order.id, 'delivered')}
-                          className="cursor-pointer rounded-lg bg-[var(--color-success)] px-3 py-1 text-xs font-medium text-white transition-colors hover:bg-[var(--color-success)]/80"
+                          className="inline-flex min-h-[44px] cursor-pointer items-center rounded-[var(--radius-lg)] bg-[var(--color-success)] px-4 py-2 text-sm font-medium text-[var(--color-primary-foreground)] transition-colors hover:bg-[var(--color-success)]/80"
                         >
                           Mark Delivered
                         </button>

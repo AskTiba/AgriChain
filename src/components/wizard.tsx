@@ -19,7 +19,7 @@ export function Wizard({ currentStep, totalSteps, onNext, onBack, onSubmit, chil
         <p className="text-sm font-medium text-[var(--color-text-muted)]">
           Step {currentStep + 1} of {totalSteps}
         </p>
-        <div className="flex gap-1.5" role="progressbar" aria-valuenow={currentStep + 1} aria-valuemin={1} aria-valuemax={totalSteps}>
+        <div className="flex gap-1.5" role="progressbar" aria-label="Onboarding progress" aria-valuenow={currentStep + 1} aria-valuemin={1} aria-valuemax={totalSteps}>
           {Array.from({ length: totalSteps }, (_, i) => (
             <div
               key={i}

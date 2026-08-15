@@ -16,6 +16,7 @@ export function DefaultCatchBoundary({
         </h2>
         <p className="mb-6 text-[var(--color-text-muted)]">{error.message}</p>
         <button
+          type="button"
           onClick={() => router.invalidate()}
           className="cursor-pointer rounded-[var(--radius-md)] bg-[var(--color-primary)] px-6 py-3 font-medium text-[var(--color-primary-foreground)] transition-colors hover:bg-[var(--color-primary-hover)]"
           style={{ minHeight: '44px' }}

@@ -31,17 +31,20 @@ function BuyerPage() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-[var(--color-text)]">
+      <section className="mb-12">
+        <h1
+          className="font-bold text-[var(--color-text)]"
+          style={{ fontSize: 'clamp(1.25rem, 2vw + 0.75rem, 1.75rem)' }}
+        >
           Available Harvests
         </h1>
-        <p className="mt-2 text-[var(--color-text-muted)]">
+        <p className="mt-2 text-base text-[var(--color-text-muted)]">
           Browse and order fresh produce from local cooperatives
         </p>
-      </div>
+      </section>
 
       {isFetching && (
-        <div className="mb-4 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-elevated)] p-4 shadow-sm">
+        <div className="mb-4 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface-elevated)] p-4 shadow-sm" role="status" aria-live="polite">
           <div className="flex items-center gap-2">
             <div className="h-4 w-4 animate-spin rounded-full border-2 border-[var(--color-primary)] border-t-transparent" />
             <span className="text-sm text-[var(--color-text-muted)]">Refreshing harvests...</span>
@@ -50,7 +53,7 @@ function BuyerPage() {
       )}
 
       {harvests.length === 0 ? (
-        <div className="rounded-lg border border-[var(--color-border-subtle)] bg-[var(--color-surface-elevated)] p-12 text-center shadow-sm">
+        <div className="rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-surface-elevated)] p-12 text-center shadow-sm">
           <p className="text-[var(--color-text-muted)]">
             No harvests available at the moment
           </p>
@@ -60,11 +63,11 @@ function BuyerPage() {
           {harvests.map((harvest) => (
             <div
               key={harvest.id}
-              className="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-elevated)] p-6 shadow-sm transition-shadow hover:shadow-md"
+              className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface-elevated)] p-6 shadow-sm transition-shadow hover:shadow-md"
             >
               <div className="mb-4 flex items-start justify-between">
                 <div>
-                  <h3 className="text-lg font-semibold text-[var(--color-text)]">
+                  <h3 className="font-semibold text-[var(--color-text)]" style={{ fontSize: 'clamp(1.125rem, 1.5vw + 0.5rem, 1.5rem)' }}>
                     {harvest.cropType}
                   </h3>
                   <p className="text-sm text-[var(--color-text-muted)]">
@@ -94,16 +97,17 @@ function BuyerPage() {
               {selectedHarvest === harvest.id ? (
                 <div className="space-y-3">
                   <div>
-                    <label className="mb-1 block text-sm font-medium text-[var(--color-text-muted)]">
+                    <label htmlFor={`qty-${harvest.id}`} className="mb-1 block text-sm font-medium text-[var(--color-text-muted)]">
                       Quantity (kg)
                     </label>
                     <input
+                      id={`qty-${harvest.id}`}
                       type="number"
                       min={1}
                       max={harvest.quantity}
                       value={orderQuantity}
                       onChange={(e) => setOrderQuantity(Number(e.target.value))}
-                      className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-elevated)] px-3 py-2 text-sm text-[var(--color-text)] focus:border-[var(--color-primary)] focus:outline-none"
+                      className="w-full min-h-[44px] rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface-elevated)] px-3 py-2 text-sm text-[var(--color-text)] focus:border-[var(--color-primary)] focus:outline-none"
                     />
                   </div>
                   <div className="flex gap-2">
@@ -111,7 +115,7 @@ function BuyerPage() {
                       type="button"
                       onClick={() => handlePlaceOrder(harvest.id)}
                       disabled={orderQuantity <= 0 || orderQuantity > harvest.quantity}
-                      className="flex-1 cursor-pointer rounded-lg bg-[var(--color-primary)] px-4 py-2 text-sm font-medium text-[var(--color-primary-foreground)] transition-colors hover:bg-[var(--color-primary-hover)] disabled:cursor-not-allowed disabled:opacity-50"
+                      className="flex-1 inline-flex min-h-[44px] cursor-pointer items-center justify-center rounded-[var(--radius-lg)] bg-[var(--color-primary)] px-4 py-2 text-sm font-medium text-[var(--color-primary-foreground)] transition-colors hover:bg-[var(--color-primary-hover)] disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       Place Order
                     </button>
@@ -121,7 +125,7 @@ function BuyerPage() {
                         setSelectedHarvest(null)
                         setOrderQuantity(0)
                       }}
-                      className="cursor-pointer rounded-lg border border-[var(--color-border)] px-4 py-2 text-sm font-medium text-[var(--color-text)] transition-colors hover:bg-[var(--color-surface)]"
+                      className="inline-flex min-h-[44px] cursor-pointer items-center justify-center rounded-[var(--radius-lg)] border border-[var(--color-border)] px-4 py-2 text-sm font-medium text-[var(--color-text)] transition-colors hover:bg-[var(--color-surface)]"
                     >
                       Cancel
                     </button>
@@ -134,7 +138,7 @@ function BuyerPage() {
                     setSelectedHarvest(harvest.id)
                     setOrderQuantity(Math.min(10, harvest.quantity))
                   }}
-                  className="w-full cursor-pointer rounded-lg border border-[var(--color-primary)] bg-[var(--color-primary)]/5 px-4 py-2 text-sm font-medium text-[var(--color-primary)] transition-colors hover:bg-[var(--color-primary)]/10"
+                  className="w-full inline-flex min-h-[44px] cursor-pointer items-center justify-center rounded-[var(--radius-lg)] border border-[var(--color-primary)] bg-[var(--color-primary)]/5 px-4 py-2 text-sm font-medium text-[var(--color-primary)] transition-colors hover:bg-[var(--color-primary)]/10"
                 >
                   Order Now
                 </button>
