@@ -48,7 +48,7 @@ interface Assignment {
   vehicleId: string
 }
 
-function Logistics() {
+export function Logistics() {
   const [vehicles, setVehicles] = useState<Vehicle[]>(INITIAL_VEHICLES)
   const [assignments, setAssignments] = useState<Assignment[]>([])
   const [copied, setCopied] = useState(false)
