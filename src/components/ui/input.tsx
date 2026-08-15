@@ -17,7 +17,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
       <div className="group">
         <label
           htmlFor={inputId}
-          className="mb-2 block text-sm font-medium text-[var(--color-text)]"
+          className="mb-1.5 block text-[13px] font-medium text-[var(--color-text-muted)]"
         >
           {label}
         </label>
@@ -28,13 +28,13 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           aria-invalid={hasError}
           aria-describedby={hasError ? errorId : hint ? hintId : undefined}
           className={[
-            'w-full rounded-[var(--radius-md)] border bg-[var(--color-surface-elevated)] px-4 py-3 text-[var(--color-text)] transition-all duration-200',
+            'w-full cursor-text rounded-lg border bg-[var(--color-surface-elevated)] px-3 py-2 text-[14px] text-[var(--color-text)] transition-colors duration-100 ease-out',
             'placeholder:text-[var(--color-text-subtle)]',
-            'hover:border-[var(--color-primary)]/40 hover:shadow-[0_0_0_1px_var(--color-primary)]/10',
-            'focus:border-[var(--color-primary)] focus:shadow-[0_0_0_3px_var(--color-focus-ring)]/10 focus:outline-none',
-            'disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-[var(--color-border)] disabled:hover:shadow-none',
+            'hover:bg-[var(--color-surface)]',
+            'focus:border-[var(--color-primary)] focus:shadow-[0_0_0_3px_var(--color-focus-ring)]/20 focus:outline-none',
+            'disabled:cursor-not-allowed disabled:opacity-40',
             hasError
-              ? 'border-[var(--color-danger)] focus:border-[var(--color-danger)] focus:shadow-[0_0_0_3px_var(--color-danger)]/10'
+              ? 'border-[var(--color-danger)] focus:border-[var(--color-danger)] focus:shadow-[0_0_0_3px_var(--color-danger)]/20'
               : 'border-[var(--color-border)]',
             className,
           ].join(' ')}
@@ -42,13 +42,13 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         />
 
         {hasError && (
-          <p id={errorId} role="alert" className="mt-1.5 text-sm text-[var(--color-danger)]">
+          <p id={errorId} role="alert" className="mt-1 text-[12px] text-[var(--color-danger)]">
             {error}
           </p>
         )}
 
         {!hasError && hint && (
-          <p id={hintId} className="mt-1.5 text-sm text-[var(--color-text-subtle)]">
+          <p id={hintId} className="mt-1 text-[12px] text-[var(--color-text-subtle)]">
             {hint}
           </p>
         )}

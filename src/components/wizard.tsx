@@ -40,7 +40,7 @@ export function Wizard({ currentStep, totalSteps, onNext, onBack, onSubmit, chil
           <button
             type="button"
             onClick={onBack}
-            className="inline-flex min-h-[44px] items-center rounded-[var(--radius-md)] border border-[var(--color-border)] px-6 py-3 font-medium text-[var(--color-text)] transition-colors hover:bg-[var(--color-background)]"
+            className="inline-flex min-h-[44px] cursor-pointer items-center rounded-[var(--radius-md)] border border-[var(--color-border)] px-6 py-3 font-medium text-[var(--color-text)] transition-colors hover:bg-[var(--color-background)]"
           >
             Back
           </button>
@@ -50,7 +50,7 @@ export function Wizard({ currentStep, totalSteps, onNext, onBack, onSubmit, chil
             <button
               type="button"
               onClick={onSubmit}
-              className="inline-flex min-h-[44px] items-center rounded-[var(--radius-md)] bg-[var(--color-primary)] px-6 py-3 font-medium text-[var(--color-primary-foreground)] transition-colors hover:bg-[var(--color-primary-hover)]"
+              className="inline-flex min-h-[44px] cursor-pointer items-center rounded-[var(--radius-md)] bg-[var(--color-primary)] px-6 py-3 font-medium text-[var(--color-primary-foreground)] transition-colors hover:bg-[var(--color-primary-hover)]"
             >
               Submit
             </button>
@@ -58,7 +58,7 @@ export function Wizard({ currentStep, totalSteps, onNext, onBack, onSubmit, chil
             <button
               type="button"
               onClick={onNext}
-              className="inline-flex min-h-[44px] items-center rounded-[var(--radius-md)] bg-[var(--color-primary)] px-6 py-3 font-medium text-[var(--color-primary-foreground)] transition-colors hover:bg-[var(--color-primary-hover)]"
+              className="inline-flex min-h-[44px] cursor-pointer items-center rounded-[var(--radius-md)] bg-[var(--color-primary)] px-6 py-3 font-medium text-[var(--color-primary-foreground)] transition-colors hover:bg-[var(--color-primary-hover)]"
             >
               Next
             </button>

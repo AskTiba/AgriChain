@@ -128,7 +128,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
               role="banner"
             >
               <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
-                <Link to="/" className="flex items-center gap-2 no-underline">
+                <Link to="/" className="flex cursor-pointer items-center gap-2 no-underline">
                   <span className="text-xl font-bold text-[var(--color-primary)]">
                     Agri-Tech Co-op
                   </span>
@@ -137,35 +137,35 @@ function RootDocument({ children }: { children: React.ReactNode }) {
                 <nav aria-label="Primary navigation" className="flex items-center gap-6">
                   <Link
                     to="/"
-                    className="text-sm font-medium text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-primary)] [&.active]:text-[var(--color-primary)]"
+                    className="cursor-pointer text-sm font-medium text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-primary)] [&.active]:text-[var(--color-primary)]"
                     activeOptions={{ exact: true }}
                   >
                     Dashboard
                   </Link>
                   <Link
                     to="/harvest"
-                    className="text-sm font-medium text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-primary)] [&.active]:text-[var(--color-primary)]"
+                    className="cursor-pointer text-sm font-medium text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-primary)] [&.active]:text-[var(--color-primary)]"
                   >
                     Harvest
                   </Link>
                   <Link
                     to="/logistics"
-                    className="text-sm font-medium text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-primary)] [&.active]:text-[var(--color-primary)]"
+                    className="cursor-pointer text-sm font-medium text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-primary)] [&.active]:text-[var(--color-primary)]"
                   >
                     Logistics
                   </Link>
                   <Link
                     to="/onboarding"
-                    className="text-sm font-medium text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-primary)] [&.active]:text-[var(--color-primary)]"
+                    className="cursor-pointer text-sm font-medium text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-primary)] [&.active]:text-[var(--color-primary)]"
                   >
                     Onboarding
-                </Link>
-              </nav>
+                  </Link>
+                </nav>
 
               <button
                 onClick={cycleTheme}
                 aria-label={`Theme: ${mode}. Click to cycle.`}
-                className="inline-flex h-11 w-11 items-center justify-center rounded-[var(--radius-md)] border border-[var(--color-border-subtle)] bg-[var(--color-surface-elevated)] text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-surface)] hover:text-[var(--color-text)]"
+                className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-[var(--radius-md)] border border-[var(--color-border-subtle)] bg-[var(--color-surface-elevated)] text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-surface)] hover:text-[var(--color-text)]"
                 style={{ minWidth: '44px', minHeight: '44px' }}
               >
                 {mode === 'system' ? (

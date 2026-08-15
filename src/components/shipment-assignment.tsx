@@ -62,7 +62,7 @@ export function ShipmentAssignment({ harvests, vehicles, assigned, onAssign }: S
                         key={v.id}
                         type="button"
                         onClick={() => onAssign(h.id, v.id)}
-                        className="rounded-[var(--radius-md)] border border-[var(--color-border)] px-3 py-1 text-xs font-medium text-[var(--color-text)] transition-colors hover:bg-[var(--color-primary)] hover:text-[var(--color-primary-foreground)]"
+                        className="cursor-pointer rounded-[var(--radius-md)] border border-[var(--color-border)] px-3 py-1 text-xs font-medium text-[var(--color-text)] transition-colors hover:bg-[var(--color-primary)] hover:text-[var(--color-primary-foreground)]"
                       >
                         {v.name}
                       </button>
