@@ -7,7 +7,7 @@ export const Route = createFileRoute('/orders/')({
   component: OrdersPage,
 })
 
-function OrdersPage() {
+export function OrdersPage() {
   const { data: orders = [], isFetching } = useOrders()
   const { data: harvests = [] } = useHarvests()
   const updateOrderStatus = useUpdateOrderStatus()
