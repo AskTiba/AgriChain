@@ -15,6 +15,7 @@ import { localStoragePersister } from '~/router'
 import { DefaultCatchBoundary } from '~/components/DefaultCatchBoundary'
 import { NotFound } from '~/components/NotFound'
 import appCss from '~/styles/app.css?url'
+import { seedData, seedDataScript } from '~/app/lib/seed-data'
 
 export const Route = createRootRouteWithContext<{
   queryClient: QueryClient
@@ -70,6 +71,11 @@ const themeScript = `
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   const [mode, setMode] = React.useState<ThemeMode>('system')
+  const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false)
+
+  React.useEffect(() => {
+    seedData()
+  }, [])
 
   React.useEffect(() => {
     const stored = localStorage.getItem('theme') as ThemeMode | null
@@ -101,15 +107,19 @@ function RootDocument({ children }: { children: React.ReactNode }) {
     })
   }
 
-  const [resolved, setResolved] = React.useState<'light' | 'dark'>('light')
-
-  React.useEffect(() => {
-    setResolved(resolveTheme(mode))
-  }, [mode])
+  const navLinks = [
+    { to: '/', label: 'Dashboard', exact: true },
+    { to: '/harvest', label: 'Harvest' },
+    { to: '/logistics', label: 'Logistics' },
+    { to: '/buyer', label: 'Buyer' },
+    { to: '/orders', label: 'Orders' },
+    { to: '/onboarding', label: 'Onboarding' },
+  ]
 
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        <script dangerouslySetInnerHTML={{ __html: seedDataScript }} />
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
         <HeadContent />
       </head>
@@ -127,98 +137,114 @@ function RootDocument({ children }: { children: React.ReactNode }) {
               className="sticky top-0 z-50 border-b border-[var(--color-border-subtle)] bg-[var(--color-surface)]/80 backdrop-blur-md"
               role="banner"
             >
-              <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
-                <Link to="/" className="flex cursor-pointer items-center gap-2 no-underline">
-                  <span className="text-xl font-bold text-[var(--color-primary)]">
-                    Agri-Tech Co-op
-                  </span>
-                </Link>
+              <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                <div className="flex h-14 items-center justify-between">
+                  <Link to="/" className="flex cursor-pointer items-center gap-2 no-underline">
+                    <span className="text-lg font-bold text-[var(--color-primary)]">
+                      Agri-Tech Co-op
+                    </span>
+                  </Link>
 
-                <nav aria-label="Primary navigation" className="flex items-center gap-6">
-                  <Link
-                    to="/"
-                    className="cursor-pointer text-sm font-medium text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-primary)] [&.active]:text-[var(--color-primary)]"
-                    activeOptions={{ exact: true }}
-                  >
-                    Dashboard
-                  </Link>
-                  <Link
-                    to="/harvest"
-                    className="cursor-pointer text-sm font-medium text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-primary)] [&.active]:text-[var(--color-primary)]"
-                  >
-                    Harvest
-                  </Link>
-                  <Link
-                    to="/logistics"
-                    className="cursor-pointer text-sm font-medium text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-primary)] [&.active]:text-[var(--color-primary)]"
-                  >
-                    Logistics
-                  </Link>
-                  <Link
-                    to="/buyer"
-                    className="cursor-pointer text-sm font-medium text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-primary)] [&.active]:text-[var(--color-primary)]"
-                  >
-                    Buyer
-                  </Link>
-                  <Link
-                    to="/orders"
-                    className="cursor-pointer text-sm font-medium text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-primary)] [&.active]:text-[var(--color-primary)]"
-                  >
-                    Orders
-                  </Link>
-                  <Link
-                    to="/onboarding"
-                    className="cursor-pointer text-sm font-medium text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-primary)] [&.active]:text-[var(--color-primary)]"
-                  >
-                    Onboarding
-                  </Link>
-                </nav>
+                  {/* Desktop nav */}
+                  <nav aria-label="Primary navigation" className="hidden items-center gap-1 md:flex">
+                    {navLinks.map((link) => (
+                      <Link
+                        key={link.to}
+                        to={link.to}
+                        className="cursor-pointer rounded-lg px-3 py-2 text-sm font-medium text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-surface)] hover:text-[var(--color-text)] [&.active]:bg-[var(--color-primary)]/10 [&.active]:text-[var(--color-primary)]"
+                        activeOptions={link.exact ? { exact: true } : undefined}
+                      >
+                        {link.label}
+                      </Link>
+                    ))}
+                  </nav>
 
-              <button
-                onClick={cycleTheme}
-                aria-label={`Theme: ${mode}. Click to cycle.`}
-                className="inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-[var(--radius-md)] border border-[var(--color-border-subtle)] bg-[var(--color-surface-elevated)] text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-surface)] hover:text-[var(--color-text)]"
-                style={{ minWidth: '44px', minHeight: '44px' }}
-              >
-                {mode === 'system' ? (
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <rect width="20" height="14" x="2" y="3" rx="2" />
-                    <line x1="8" x2="16" y1="21" y2="21" />
-                    <line x1="12" x2="12" y1="17" y2="21" />
-                  </svg>
-                ) : resolved === 'dark' ? (
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
-                  </svg>
-                ) : (
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <circle cx="12" cy="12" r="4" />
-                    <path d="M12 2v2" />
-                    <path d="M12 20v2" />
-                    <path d="m4.93 4.93 1.41 1.41" />
-                    <path d="m17.66 17.66 1.41 1.41" />
-                    <path d="M2 12h2" />
-                    <path d="M20 12h2" />
-                    <path d="m6.34 17.66-1.41 1.41" />
-                    <path d="m19.07 4.93-1.41 1.41" />
-                  </svg>
+                  <div className="flex items-center gap-2">
+                    {/* Theme toggle */}
+                    <button
+                      onClick={cycleTheme}
+                      aria-label={`Theme: ${mode}. Click to cycle.`}
+                      className="inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-surface)] hover:text-[var(--color-text)]"
+                    >
+                      {mode === 'system' ? (
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <rect width="20" height="14" x="2" y="3" rx="2" />
+                          <line x1="8" x2="16" y1="21" y2="21" />
+                          <line x1="12" x2="12" y1="17" y2="21" />
+                        </svg>
+                      ) : mode === 'dark' ? (
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
+                        </svg>
+                      ) : (
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <circle cx="12" cy="12" r="4" />
+                          <path d="M12 2v2" />
+                          <path d="M12 20v2" />
+                          <path d="m4.93 4.93 1.41 1.41" />
+                          <path d="m17.66 17.66 1.41 1.41" />
+                          <path d="M2 12h2" />
+                          <path d="M20 12h2" />
+                          <path d="m6.34 17.66-1.41 1.41" />
+                          <path d="m19.07 4.93-1.41 1.41" />
+                        </svg>
+                      )}
+                    </button>
+
+                    {/* Mobile menu button */}
+                    <button
+                      onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                      aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
+                      aria-expanded={mobileMenuOpen}
+                      className="inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-surface)] hover:text-[var(--color-text)] md:hidden"
+                    >
+                      {mobileMenuOpen ? (
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M18 6 6 18" />
+                          <path d="m6 6 12 12" />
+                        </svg>
+                      ) : (
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <line x1="4" x2="20" y1="12" y2="12" />
+                          <line x1="4" x2="20" y1="6" y2="6" />
+                          <line x1="4" x2="20" y1="18" y2="18" />
+                        </svg>
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Mobile nav */}
+                {mobileMenuOpen && (
+                  <nav aria-label="Primary navigation" className="border-t border-[var(--color-border-subtle)] py-2 md:hidden">
+                    {navLinks.map((link) => (
+                      <Link
+                        key={link.to}
+                        to={link.to}
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="block cursor-pointer px-3 py-2.5 text-sm font-medium text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-surface)] hover:text-[var(--color-text)] [&.active]:bg-[var(--color-primary)]/10 [&.active]:text-[var(--color-primary)]"
+                        activeOptions={link.exact ? { exact: true } : undefined}
+                      >
+                        {link.label}
+                      </Link>
+                    ))}
+                  </nav>
                 )}
-              </button>
-            </div>
-          </header>
+              </div>
+            </header>
 
-          <main id="main-content" className="flex-1" role="main">
-            {children}
-          </main>
+            <main id="main-content" className="flex-1" role="main">
+              {children}
+            </main>
 
-          <footer
-            className="border-t border-[var(--color-border-subtle)] bg-[var(--color-surface)]"
-            role="contentinfo"
-          >
-            <div className="mx-auto max-w-7xl px-4 py-6 text-center text-sm text-[var(--color-text-subtle)] sm:px-6 lg:px-8">
-              Agri-Tech Cooperative & Supply Chain Tracker
-            </div>
-          </footer>
+            <footer
+              className="border-t border-[var(--color-border-subtle)] bg-[var(--color-surface)]"
+              role="contentinfo"
+            >
+              <div className="mx-auto max-w-7xl px-4 py-6 text-center text-sm text-[var(--color-text-subtle)] sm:px-6 lg:px-8">
+                Agri-Tech Cooperative & Supply Chain Tracker
+              </div>
+            </footer>
           </div>
 
           <TanStackRouterDevtools position="bottom-right" />

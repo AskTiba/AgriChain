@@ -21,9 +21,9 @@ A commercial-grade agricultural logistics and supply chain coordination platform
 - [x] Shareable logistics manifest links via URL search params
 
 ### Milestone 4: Buyer Portal & Order Management
-- [ ] Buyer can browse available harvests and place orders
-- [ ] Order list with status tracking (pending → confirmed → delivered)
-- [ ] Order detail view with shipment link
+- [x] Buyer can browse available harvests and place orders
+- [x] Order list with status tracking (pending → confirmed → delivered)
+- [x] Order detail view with shipment link
 
 ## Non-Functional Requirements
 - **Performance:** First contentful paint < 1.5s on 3G

@@ -8,7 +8,7 @@ export const Route = createFileRoute('/buyer')({
 })
 
 function BuyerPage() {
-  const { data: harvests = [], isLoading } = useHarvests()
+  const { data: harvests = [], isFetching } = useHarvests()
   const addOrder = useAddOrder()
   const [selectedHarvest, setSelectedHarvest] = useState<string | null>(null)
   const [orderQuantity, setOrderQuantity] = useState<number>(0)
@@ -29,17 +29,6 @@ function BuyerPage() {
     setOrderQuantity(0)
   }
 
-  if (isLoading) {
-    return (
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 w-48 rounded bg-[var(--color-surface)]" />
-          <div className="h-64 rounded-lg bg-[var(--color-surface)]" />
-        </div>
-      </div>
-    )
-  }
-
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <div className="mb-8">
@@ -50,6 +39,15 @@ function BuyerPage() {
           Browse and order fresh produce from local cooperatives
         </p>
       </div>
+
+      {isFetching && (
+        <div className="mb-4 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface-elevated)] p-4 shadow-sm">
+          <div className="flex items-center gap-2">
+            <div className="h-4 w-4 animate-spin rounded-full border-2 border-[var(--color-primary)] border-t-transparent" />
+            <span className="text-sm text-[var(--color-text-muted)]">Refreshing harvests...</span>
+          </div>
+        </div>
+      )}
 
       {harvests.length === 0 ? (
         <div className="rounded-lg border border-[var(--color-border-subtle)] bg-[var(--color-surface-elevated)] p-12 text-center shadow-sm">

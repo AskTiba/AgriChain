@@ -16,6 +16,12 @@
 - Premium UI components (Select, Input) with macOS native styling
 - Design token system (CSS custom properties) for light/dark themes
 - Global CSS with prefers-reduced-motion fallbacks, focus-visible rings
+- Buyer portal with harvest browsing, order placement, and order status tracking
+- Order IDs use `orderNumber` slug (`ORD-000001`) for URLs and display
+- Order detail view with harvest info, status badges, and shipment link
+- Responsive navbar with mobile hamburger menu, desktop horizontal links
+- Seed data with UUIDs for `id` and sequential `orderNumber` slugs
+- Seed versioning (`agri-tech-seed-version`) to force refresh old data
 - Git repo initialized
   - `330e396` feat: scaffold TanStack Start project with design tokens
   - `681861c` feat: add onboarding route with cooperative profile form
@@ -31,6 +37,9 @@
   - `2af8245` feat: add shipment assignment with vehicle selection and harvest mapping
   - `ebe2fc0` feat: add shareable manifests with base64 URL encoding and read-only view
   - `234de78` feat: redesign Select and Input to macOS native pop-up button style
+  - `c3435cb` feat: add buyer portal with harvest browsing and order management
+  - `786f5c6` feat: add reusable Select and Input components with custom chevron
+  - `e44ee5e` feat: fix responsive navbar, theme toggle, and seed data with proper UUIDs
 
 ## In Progress
 - Sprint 5: Buyer Portal & Order Management
