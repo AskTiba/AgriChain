@@ -6,8 +6,6 @@ import {
   Scripts,
   createRootRouteWithContext,
 } from '@tanstack/react-router'
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
-import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client'
 import * as React from 'react'
 import type { QueryClient } from '@tanstack/react-query'
@@ -69,6 +67,22 @@ const themeScript = `
     document.documentElement.classList.add(resolved);
   })();
 `
+
+const DevTools = import.meta.env.DEV
+  ? React.lazy(() =>
+      Promise.all([
+        import('@tanstack/react-router-devtools'),
+        import('@tanstack/react-query-devtools'),
+      ]).then(([router, query]) => ({
+        default: () => (
+          <>
+            <router.TanStackRouterDevtools position="bottom-right" />
+            <query.ReactQueryDevtools buttonPosition="bottom-left" />
+          </>
+        ),
+      })),
+    )
+  : null
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   const [mode, setMode] = React.useState<ThemeMode>(() => {
@@ -248,8 +262,11 @@ function RootDocument({ children }: { children: React.ReactNode }) {
             </footer>
           </div>
 
-          <TanStackRouterDevtools position="bottom-right" />
-          <ReactQueryDevtools buttonPosition="bottom-left" />
+          {DevTools && (
+            <React.Suspense fallback={null}>
+              <DevTools />
+            </React.Suspense>
+          )}
           <Scripts />
         </PersistQueryClientProvider>
       </body>
