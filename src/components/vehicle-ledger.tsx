@@ -1,4 +1,5 @@
 import { useForm } from '@tanstack/react-form'
+import { Input } from './ui/input'
 
 interface Vehicle {
   id: string
@@ -50,25 +51,16 @@ export function VehicleLedger({ vehicles, onAdd }: VehicleLedgerProps) {
               }}
             >
               {(field) => (
-                <div>
-                  <label htmlFor="vehicle-name" className="mb-1 block text-sm font-medium text-[var(--color-text)]">
-                    Vehicle Name
-                  </label>
-                  <input
-                    id="vehicle-name"
-                    type="text"
-                    value={field.state.value}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    onBlur={field.handleBlur}
-                    className="w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-background)] px-3 py-2 text-[var(--color-text)] transition-colors focus:border-[var(--color-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-focus-ring)]/20"
-                    placeholder="e.g. Truck A"
-                  />
-                  {field.state.meta.errors.length > 0 && (
-                    <p role="alert" className="mt-1 text-xs text-[var(--color-danger)]">
-                      {field.state.meta.errors[0]}
-                    </p>
-                  )}
-                </div>
+                <Input
+                  label="Vehicle Name"
+                  id="vehicle-name"
+                  type="text"
+                  placeholder="e.g. Truck A"
+                  value={field.state.value}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  onBlur={field.handleBlur}
+                  error={field.state.meta.errors.length > 0 ? field.state.meta.errors[0] : undefined}
+                />
               )}
             </form.Field>
 
@@ -82,26 +74,17 @@ export function VehicleLedger({ vehicles, onAdd }: VehicleLedgerProps) {
               }}
             >
               {(field) => (
-                <div>
-                  <label htmlFor="payload" className="mb-1 block text-sm font-medium text-[var(--color-text)]">
-                    Payload Capacity (kg)
-                  </label>
-                  <input
-                    id="payload"
-                    type="number"
-                    min="0"
-                    value={field.state.value || ''}
-                    onChange={(e) => field.handleChange(parseFloat(e.target.value) || 0)}
-                    onBlur={field.handleBlur}
-                    className="w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-background)] px-3 py-2 text-[var(--color-text)] transition-colors focus:border-[var(--color-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-focus-ring)]/20"
-                    placeholder="e.g. 5000"
-                  />
-                  {field.state.meta.errors.length > 0 && (
-                    <p role="alert" className="mt-1 text-xs text-[var(--color-danger)]">
-                      {field.state.meta.errors[0]}
-                    </p>
-                  )}
-                </div>
+                <Input
+                  label="Payload Capacity (kg)"
+                  id="payload"
+                  type="number"
+                  min="0"
+                  placeholder="e.g. 5000"
+                  value={field.state.value || ''}
+                  onChange={(e) => field.handleChange(parseFloat(e.target.value) || 0)}
+                  onBlur={field.handleBlur}
+                  error={field.state.meta.errors.length > 0 ? field.state.meta.errors[0] : undefined}
+                />
               )}
             </form.Field>
 
@@ -112,25 +95,16 @@ export function VehicleLedger({ vehicles, onAdd }: VehicleLedgerProps) {
               }}
             >
               {(field) => (
-                <div>
-                  <label htmlFor="driver" className="mb-1 block text-sm font-medium text-[var(--color-text)]">
-                    Driver Name
-                  </label>
-                  <input
-                    id="driver"
-                    type="text"
-                    value={field.state.value}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    onBlur={field.handleBlur}
-                    className="w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-background)] px-3 py-2 text-[var(--color-text)] transition-colors focus:border-[var(--color-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-focus-ring)]/20"
-                    placeholder="e.g. John Doe"
-                  />
-                  {field.state.meta.errors.length > 0 && (
-                    <p role="alert" className="mt-1 text-xs text-[var(--color-danger)]">
-                      {field.state.meta.errors[0]}
-                    </p>
-                  )}
-                </div>
+                <Input
+                  label="Driver Name"
+                  id="driver"
+                  type="text"
+                  placeholder="e.g. John Doe"
+                  value={field.state.value}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  onBlur={field.handleBlur}
+                  error={field.state.meta.errors.length > 0 ? field.state.meta.errors[0] : undefined}
+                />
               )}
             </form.Field>
 
@@ -141,25 +115,16 @@ export function VehicleLedger({ vehicles, onAdd }: VehicleLedgerProps) {
               }}
             >
               {(field) => (
-                <div>
-                  <label htmlFor="destination" className="mb-1 block text-sm font-medium text-[var(--color-text)]">
-                    Destination
-                  </label>
-                  <input
-                    id="destination"
-                    type="text"
-                    value={field.state.value}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    onBlur={field.handleBlur}
-                    className="w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-background)] px-3 py-2 text-[var(--color-text)] transition-colors focus:border-[var(--color-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-focus-ring)]/20"
-                    placeholder="e.g. Market East"
-                  />
-                  {field.state.meta.errors.length > 0 && (
-                    <p role="alert" className="mt-1 text-xs text-[var(--color-danger)]">
-                      {field.state.meta.errors[0]}
-                    </p>
-                  )}
-                </div>
+                <Input
+                  label="Destination"
+                  id="destination"
+                  type="text"
+                  placeholder="e.g. Market East"
+                  value={field.state.value}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  onBlur={field.handleBlur}
+                  error={field.state.meta.errors.length > 0 ? field.state.meta.errors[0] : undefined}
+                />
               )}
             </form.Field>
           </div>

@@ -8,12 +8,12 @@ describe('Onboarding Form Validation', () => {
     const user = userEvent.setup()
     render(<Onboarding />)
 
-    const nameInput = screen.getByLabelText(/cooperative name/i)
-
     await user.click(screen.getByRole('button', { name: /next/i }))
 
     expect(screen.getByText(/cooperative name is required/i)).toBeInTheDocument()
-    expect(nameInput).toHaveAttribute('aria-invalid', 'true')
+    await waitFor(() => {
+      expect(screen.getByLabelText(/cooperative name/i)).toHaveAttribute('aria-invalid', 'true')
+    })
   })
 
   it('shows error when region is empty on submit', async () => {
@@ -30,12 +30,10 @@ describe('Onboarding Form Validation', () => {
     const user = userEvent.setup()
     render(<Onboarding />)
 
-    const nameInput = screen.getByLabelText(/cooperative name/i)
-
     await user.click(screen.getByRole('button', { name: /next/i }))
     expect(screen.getByText(/cooperative name is required/i)).toBeInTheDocument()
 
-    await user.type(nameInput, 'Green Valley')
+    await user.type(screen.getByLabelText(/cooperative name/i), 'Green Valley')
     await waitFor(() => {
       expect(screen.queryByText(/cooperative name is required/i)).not.toBeInTheDocument()
     })

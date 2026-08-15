@@ -2,6 +2,9 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useForm } from '@tanstack/react-form'
 import { useState } from 'react'
 import { HarvestLogList } from '../components/harvest-log-list'
+import { Select } from '../components/ui/select'
+import { Input } from '../components/ui/input'
+import { useHarvests, useAddHarvest } from '../app/hooks/use-harvests'
 
 export const Route = createFileRoute('/harvest')({
   component: Harvest,
@@ -23,23 +26,16 @@ const QUALITY_GRADES = [
   { value: 'C', label: 'Grade C — Economy' },
 ]
 
-interface HarvestEntry {
-  id: string
-  cropType: string
-  qualityGrade: string
-  quantity: number
-  fieldId: string
-  timestamp: string
-}
-
 interface HarvestProps {
-  onSubmit?: (values: Omit<HarvestEntry, 'id' | 'timestamp'>) => Promise<void> | void
+  onSubmit?: (values: { cropType: string; qualityGrade: string; quantity: number; fieldId: string }) => Promise<void> | void
 }
 
 export function Harvest({ onSubmit }: HarvestProps) {
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [entries, setEntries] = useState<HarvestEntry[]>([])
+
+  const { data: entries = [], isLoading } = useHarvests()
+  const addHarvestMutation = useAddHarvest()
 
   const form = useForm({
     defaultValues: {
@@ -52,13 +48,11 @@ export function Harvest({ onSubmit }: HarvestProps) {
       setError(null)
       setSubmitted(false)
       try {
-        await onSubmit?.(value)
-        const newEntry: HarvestEntry = {
-          ...value,
-          id: crypto.randomUUID(),
-          timestamp: new Date().toISOString(),
+        if (onSubmit) {
+          await onSubmit(value)
+        } else {
+          await addHarvestMutation.mutateAsync(value)
         }
-        setEntries((prev) => [newEntry, ...prev])
         setSubmitted(true)
         form.reset()
       } catch (err) {
@@ -88,7 +82,7 @@ export function Harvest({ onSubmit }: HarvestProps) {
       >
         <span className="h-3 w-3 rounded-full bg-[var(--color-success)]" aria-hidden="true" />
         <span className="text-sm text-[var(--color-text-muted)]">
-          Connected — all changes sync in real time.
+          {isLoading ? 'Loading harvest data...' : 'Data persisted locally — works offline.'}
         </span>
       </div>
 
@@ -136,34 +130,16 @@ export function Harvest({ onSubmit }: HarvestProps) {
               }}
             >
               {(field) => (
-                <div>
-                  <label
-                    htmlFor="crop-type"
-                    className="mb-2 block text-sm font-medium text-[var(--color-text)]"
-                  >
-                    Crop Type
-                  </label>
-                  <select
-                    id="crop-type"
-                    value={field.state.value}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    onBlur={field.handleBlur}
-                    className="w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-background)] px-4 py-3 text-[var(--color-text)] transition-colors focus:border-[var(--color-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-focus-ring)]/20"
-                    aria-invalid={field.state.meta.errors.length > 0}
-                  >
-                    <option value="">Select crop type</option>
-                    {CROP_TYPES.map((crop) => (
-                      <option key={crop.value} value={crop.value}>
-                        {crop.label}
-                      </option>
-                    ))}
-                  </select>
-                  {field.state.meta.errors.length > 0 && (
-                    <p role="alert" className="mt-1 text-sm text-[var(--color-danger)]">
-                      {field.state.meta.errors[0]}
-                    </p>
-                  )}
-                </div>
+                <Select
+                  label="Crop Type"
+                  id="crop-type"
+                  placeholder="Select crop type"
+                  options={CROP_TYPES}
+                  value={field.state.value}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  onBlur={field.handleBlur}
+                  error={field.state.meta.errors.length > 0 ? field.state.meta.errors[0] : undefined}
+                />
               )}
             </form.Field>
 
@@ -175,34 +151,16 @@ export function Harvest({ onSubmit }: HarvestProps) {
               }}
             >
               {(field) => (
-                <div>
-                  <label
-                    htmlFor="quality-grade"
-                    className="mb-2 block text-sm font-medium text-[var(--color-text)]"
-                  >
-                    Quality Grade
-                  </label>
-                  <select
-                    id="quality-grade"
-                    value={field.state.value}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    onBlur={field.handleBlur}
-                    className="w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-background)] px-4 py-3 text-[var(--color-text)] transition-colors focus:border-[var(--color-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-focus-ring)]/20"
-                    aria-invalid={field.state.meta.errors.length > 0}
-                  >
-                    <option value="">Select quality grade</option>
-                    {QUALITY_GRADES.map((grade) => (
-                      <option key={grade.value} value={grade.value}>
-                        {grade.label}
-                      </option>
-                    ))}
-                  </select>
-                  {field.state.meta.errors.length > 0 && (
-                    <p role="alert" className="mt-1 text-sm text-[var(--color-danger)]">
-                      {field.state.meta.errors[0]}
-                    </p>
-                  )}
-                </div>
+                <Select
+                  label="Quality Grade"
+                  id="quality-grade"
+                  placeholder="Select quality grade"
+                  options={QUALITY_GRADES}
+                  value={field.state.value}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  onBlur={field.handleBlur}
+                  error={field.state.meta.errors.length > 0 ? field.state.meta.errors[0] : undefined}
+                />
               )}
             </form.Field>
 
@@ -216,31 +174,18 @@ export function Harvest({ onSubmit }: HarvestProps) {
               }}
             >
               {(field) => (
-                <div>
-                  <label
-                    htmlFor="quantity"
-                    className="mb-2 block text-sm font-medium text-[var(--color-text)]"
-                  >
-                    Quantity (kg)
-                  </label>
-                  <input
-                    id="quantity"
-                    type="number"
-                    min="0"
-                    step="0.1"
-                    value={field.state.value || ''}
-                    onChange={(e) => field.handleChange(parseFloat(e.target.value) || 0)}
-                    onBlur={field.handleBlur}
-                    className="w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-background)] px-4 py-3 text-[var(--color-text)] transition-colors focus:border-[var(--color-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-focus-ring)]/20"
-                    placeholder="e.g. 500"
-                    aria-invalid={field.state.meta.errors.length > 0}
-                  />
-                  {field.state.meta.errors.length > 0 && (
-                    <p role="alert" className="mt-1 text-sm text-[var(--color-danger)]">
-                      {field.state.meta.errors[0]}
-                    </p>
-                  )}
-                </div>
+                <Input
+                  label="Quantity (kg)"
+                  id="quantity"
+                  type="number"
+                  min="0"
+                  step="0.1"
+                  placeholder="e.g. 500"
+                  value={field.state.value || ''}
+                  onChange={(e) => field.handleChange(parseFloat(e.target.value) || 0)}
+                  onBlur={field.handleBlur}
+                  error={field.state.meta.errors.length > 0 ? field.state.meta.errors[0] : undefined}
+                />
               )}
             </form.Field>
 
@@ -252,29 +197,16 @@ export function Harvest({ onSubmit }: HarvestProps) {
               }}
             >
               {(field) => (
-                <div>
-                  <label
-                    htmlFor="field-id"
-                    className="mb-2 block text-sm font-medium text-[var(--color-text)]"
-                  >
-                    Field ID
-                  </label>
-                  <input
-                    id="field-id"
-                    type="text"
-                    value={field.state.value}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    onBlur={field.handleBlur}
-                    className="w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-background)] px-4 py-3 text-[var(--color-text)] transition-colors focus:border-[var(--color-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-focus-ring)]/20"
-                    placeholder="e.g. F-001"
-                    aria-invalid={field.state.meta.errors.length > 0}
-                  />
-                  {field.state.meta.errors.length > 0 && (
-                    <p role="alert" className="mt-1 text-sm text-[var(--color-danger)]">
-                      {field.state.meta.errors[0]}
-                    </p>
-                  )}
-                </div>
+                <Input
+                  label="Field ID"
+                  id="field-id"
+                  type="text"
+                  placeholder="e.g. F-001"
+                  value={field.state.value}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  onBlur={field.handleBlur}
+                  error={field.state.meta.errors.length > 0 ? field.state.meta.errors[0] : undefined}
+                />
               )}
             </form.Field>
           </div>

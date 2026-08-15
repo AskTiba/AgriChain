@@ -8,8 +8,10 @@ import {
 } from '@tanstack/react-router'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
+import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client'
 import * as React from 'react'
 import type { QueryClient } from '@tanstack/react-query'
+import { localStoragePersister } from '~/router'
 import { DefaultCatchBoundary } from '~/components/DefaultCatchBoundary'
 import { NotFound } from '~/components/NotFound'
 import appCss from '~/styles/app.css?url'
@@ -112,47 +114,51 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body className="min-h-dvh bg-[var(--color-background)] text-[var(--color-text)] antialiased">
-        <a href="#main-content" className="skip-link">
-          Skip to main content
-        </a>
+        <PersistQueryClientProvider
+          client={Route.useRouteContext().queryClient}
+          persistOptions={{ persister: localStoragePersister }}
+        >
+          <a href="#main-content" className="skip-link">
+            Skip to main content
+          </a>
 
-        <div className="flex min-h-dvh flex-col">
-          <header
-            className="sticky top-0 z-50 border-b border-[var(--color-border-subtle)] bg-[var(--color-surface)]/80 backdrop-blur-md"
-            role="banner"
-          >
-            <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
-              <Link to="/" className="flex items-center gap-2 no-underline">
-                <span className="text-xl font-bold text-[var(--color-primary)]">
-                  Agri-Tech Co-op
-                </span>
-              </Link>
+          <div className="flex min-h-dvh flex-col">
+            <header
+              className="sticky top-0 z-50 border-b border-[var(--color-border-subtle)] bg-[var(--color-surface)]/80 backdrop-blur-md"
+              role="banner"
+            >
+              <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
+                <Link to="/" className="flex items-center gap-2 no-underline">
+                  <span className="text-xl font-bold text-[var(--color-primary)]">
+                    Agri-Tech Co-op
+                  </span>
+                </Link>
 
-              <nav aria-label="Primary navigation" className="flex items-center gap-6">
-                <Link
-                  to="/"
-                  className="text-sm font-medium text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-primary)] [&.active]:text-[var(--color-primary)]"
-                  activeOptions={{ exact: true }}
-                >
-                  Dashboard
-                </Link>
-                <Link
-                  to="/harvest"
-                  className="text-sm font-medium text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-primary)] [&.active]:text-[var(--color-primary)]"
-                >
-                  Harvest
-                </Link>
-                <Link
-                  to="/logistics"
-                  className="text-sm font-medium text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-primary)] [&.active]:text-[var(--color-primary)]"
-                >
-                  Logistics
-                </Link>
-                <Link
-                  to="/onboarding"
-                  className="text-sm font-medium text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-primary)] [&.active]:text-[var(--color-primary)]"
-                >
-                  Onboarding
+                <nav aria-label="Primary navigation" className="flex items-center gap-6">
+                  <Link
+                    to="/"
+                    className="text-sm font-medium text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-primary)] [&.active]:text-[var(--color-primary)]"
+                    activeOptions={{ exact: true }}
+                  >
+                    Dashboard
+                  </Link>
+                  <Link
+                    to="/harvest"
+                    className="text-sm font-medium text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-primary)] [&.active]:text-[var(--color-primary)]"
+                  >
+                    Harvest
+                  </Link>
+                  <Link
+                    to="/logistics"
+                    className="text-sm font-medium text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-primary)] [&.active]:text-[var(--color-primary)]"
+                  >
+                    Logistics
+                  </Link>
+                  <Link
+                    to="/onboarding"
+                    className="text-sm font-medium text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-primary)] [&.active]:text-[var(--color-primary)]"
+                  >
+                    Onboarding
                 </Link>
               </nav>
 
@@ -201,11 +207,12 @@ function RootDocument({ children }: { children: React.ReactNode }) {
               Agri-Tech Cooperative & Supply Chain Tracker
             </div>
           </footer>
-        </div>
+          </div>
 
-        <TanStackRouterDevtools position="bottom-right" />
-        <ReactQueryDevtools buttonPosition="bottom-left" />
-        <Scripts />
+          <TanStackRouterDevtools position="bottom-right" />
+          <ReactQueryDevtools buttonPosition="bottom-left" />
+          <Scripts />
+        </PersistQueryClientProvider>
       </body>
     </html>
   )

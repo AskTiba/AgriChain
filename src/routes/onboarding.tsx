@@ -3,6 +3,7 @@ import { useForm } from '@tanstack/react-form'
 import { useState } from 'react'
 import { RoleSelector } from '../components/role-selector'
 import { Wizard } from '../components/wizard'
+import { Input } from '../components/ui/input'
 
 export const Route = createFileRoute('/onboarding')({
   component: Onboarding,
@@ -141,35 +142,25 @@ export function Onboarding({ onSubmit }: OnboardingProps) {
                     !value ? 'Cooperative name is required' : undefined,
                 }}
               >
-                {(field) => (
-                  <div>
-                    <label
-                      htmlFor="coop-name"
-                      className="mb-2 block text-sm font-medium text-[var(--color-text)]"
-                    >
-                      Cooperative Name
-                    </label>
-                    <input
+                {(field) => {
+                  const fieldError = field.state.meta.errors.length > 0 ? field.state.meta.errors[0] : undefined
+                  const stepError = hasStepError('cooperative name') ? currentErrors.find((e) => e.toLowerCase().includes('cooperative name')) : undefined
+                  return (
+                    <Input
+                      label="Cooperative Name"
                       id="coop-name"
                       type="text"
+                      placeholder="e.g. Green Valley Farmers Co-op"
                       value={field.state.value}
                       onChange={(e) => {
                         field.handleChange(e.target.value)
                         setStepErrors((prev) => ({ ...prev, 0: [] }))
                       }}
                       onBlur={field.handleBlur}
-                      className="w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-background)] px-4 py-3 text-[var(--color-text)] transition-colors focus:border-[var(--color-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-focus-ring)]/20"
-                      placeholder="e.g. Green Valley Farmers Co-op"
-                      aria-describedby={field.state.meta.errors.length ? 'coop-name-error' : undefined}
-                      aria-invalid={field.state.meta.errors.length > 0 || hasStepError('cooperative name')}
+                      error={fieldError || stepError}
                     />
-                    {field.state.meta.errors.length > 0 && (
-                      <p id="coop-name-error" role="alert" className="mt-1 text-sm text-[var(--color-danger)]">
-                        {field.state.meta.errors[0]}
-                      </p>
-                    )}
-                  </div>
-                )}
+                  )
+                }}
               </form.Field>
 
               <form.Field
@@ -179,35 +170,25 @@ export function Onboarding({ onSubmit }: OnboardingProps) {
                     !value ? 'Region is required' : undefined,
                 }}
               >
-                {(field) => (
-                  <div>
-                    <label
-                      htmlFor="region"
-                      className="mb-2 block text-sm font-medium text-[var(--color-text)]"
-                    >
-                      Region
-                    </label>
-                    <input
+                {(field) => {
+                  const fieldError = field.state.meta.errors.length > 0 ? field.state.meta.errors[0] : undefined
+                  const stepError = hasStepError('region') ? currentErrors.find((e) => e.toLowerCase().includes('region')) : undefined
+                  return (
+                    <Input
+                      label="Region"
                       id="region"
                       type="text"
+                      placeholder="e.g. Western Province"
                       value={field.state.value}
                       onChange={(e) => {
                         field.handleChange(e.target.value)
                         setStepErrors((prev) => ({ ...prev, 0: [] }))
                       }}
                       onBlur={field.handleBlur}
-                      className="w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-background)] px-4 py-3 text-[var(--color-text)] transition-colors focus:border-[var(--color-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-focus-ring)]/20"
-                      placeholder="e.g. Western Province"
-                      aria-describedby={field.state.meta.errors.length ? 'region-error' : undefined}
-                      aria-invalid={field.state.meta.errors.length > 0 || hasStepError('region')}
+                      error={fieldError || stepError}
                     />
-                    {field.state.meta.errors.length > 0 && (
-                      <p id="region-error" role="alert" className="mt-1 text-sm text-[var(--color-danger)]">
-                        {field.state.meta.errors[0]}
-                      </p>
-                    )}
-                  </div>
-                )}
+                  )
+                }}
               </form.Field>
             </div>
           )}
@@ -271,7 +252,7 @@ export function Onboarding({ onSubmit }: OnboardingProps) {
             </div>
           )}
 
-          {currentErrors.length > 0 && (
+          {currentErrors.length > 0 && currentStep === 1 && (
             <div role="alert" className="mt-4 space-y-1">
               {currentErrors.map((err, i) => (
                 <p key={i} className="text-sm text-[var(--color-danger)]">{err}</p>

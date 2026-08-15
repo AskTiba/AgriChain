@@ -12,20 +12,25 @@ A commercial-grade agricultural logistics and supply chain coordination platform
 
 ### Milestone 2: Harvest Logging & Inventory Management
 - [x] Real-time yield logging form (Crop type, quality grade, quantity, field ID)
-- [ ] Offline caching with TanStack Query PersistQueryClient
+- [x] Offline caching with TanStack Query PersistQueryClient
 - [x] Warehouse capacity visualization with animated meters
 
 ### Milestone 3: Logistics & Transport Matchmaking
-- [ ] Dynamic vehicle ledger (truck payload, active driver, destination)
-- [ ] Drag-and-drop shipment assignment
-- [ ] Shareable logistics manifest links via URL search params
+- [x] Dynamic vehicle ledger (truck payload, active driver, destination)
+- [x] Shipment assignment with vehicle selection
+- [x] Shareable logistics manifest links via URL search params
+
+### Milestone 4: Buyer Portal & Order Management
+- [ ] Buyer can browse available harvests and place orders
+- [ ] Order list with status tracking (pending → confirmed → delivered)
+- [ ] Order detail view with shipment link
 
 ## Non-Functional Requirements
 - **Performance:** First contentful paint < 1.5s on 3G
 - **Accessibility:** WCAG 2.2 Level AA full compliance
 - **Viewport support:** 320px to ultrawide, zero horizontal overflow
-- **Offline:** Harvest logging functional without network
+- **Offline:** Harvest logging functional without network ✓
 - **Theme:** Light, dark, and system modes with per-theme contrast ≥ 4.5:1
 
 ## Tech Debt & Risk Register
-- None currently
+- ESLint not installed

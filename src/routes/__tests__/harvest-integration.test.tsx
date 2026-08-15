@@ -1,12 +1,32 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Harvest } from '../harvest'
+
+function createTestQueryClient() {
+  return new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false,
+      },
+    },
+  })
+}
+
+function renderWithQueryClient(ui: React.ReactElement) {
+  const queryClient = createTestQueryClient()
+  return render(
+    <QueryClientProvider client={queryClient}>
+      {ui}
+    </QueryClientProvider>
+  )
+}
 
 describe('Harvest Page Integration', () => {
   it('adds entry to list after successful submission', async () => {
     const user = userEvent.setup()
-    render(<Harvest />)
+    renderWithQueryClient(<Harvest />)
 
     await user.selectOptions(screen.getByLabelText(/crop type/i), 'maize')
     await user.selectOptions(screen.getByLabelText(/quality grade/i), 'A')
@@ -21,14 +41,14 @@ describe('Harvest Page Integration', () => {
   })
 
   it('shows empty state before any submission', () => {
-    render(<Harvest />)
+    renderWithQueryClient(<Harvest />)
 
     expect(screen.getByText(/no harvest entries yet/i)).toBeInTheDocument()
   })
 
   it('hides empty state after first submission', async () => {
     const user = userEvent.setup()
-    render(<Harvest />)
+    renderWithQueryClient(<Harvest />)
 
     expect(screen.getByText(/no harvest entries yet/i)).toBeInTheDocument()
 

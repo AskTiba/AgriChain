@@ -10,6 +10,9 @@
 - Harvest log list with table display and empty state
 - Warehouse capacity visualization with animated meters and color-coded status
 - Vehicle ledger with table and add vehicle form
+- Shipment assignment with vehicle selection and harvest mapping
+- Shareable logistics manifests with base64 URL encoding and read-only view
+- Offline caching with TanStack Query PersistQueryClient (localStorage)
 - Design token system (CSS custom properties) for light/dark themes
 - Global CSS with prefers-reduced-motion fallbacks, focus-visible rings
 - Git repo initialized
@@ -24,6 +27,8 @@
   - `6f6f020` feat: add harvest log list with table display
   - `18dbd33` feat: add warehouse capacity visualization with animated meters
   - `48328c6` feat: add vehicle ledger with table and add form
+  - `2af8245` feat: add shipment assignment with vehicle selection and harvest mapping
+  - `ebe2fc0` feat: add shareable manifests with base64 URL encoding and read-only view
   - `2af8245` feat: add shipment assignment with vehicle selection and harvest mapping
 
 ## In Progress
