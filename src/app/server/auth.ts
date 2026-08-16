@@ -23,67 +23,77 @@ const LoginInputSchema = z.object({
 export const register = createServerFn({ method: 'POST' })
   .validator(RegisterInputSchema)
   .handler(async ({ data }) => {
-    const db = getDb()
+    try {
+      const db = getDb()
 
-    const existing = await db.select().from(users).where(eq(users.email, data.email)).limit(1)
-    if (existing.length > 0) {
-      throw new Error('Email already registered')
-    }
+      const existing = await db.select().from(users).where(eq(users.email, data.email)).limit(1)
+      if (existing.length > 0) {
+        throw new Error('Email already registered')
+      }
 
-    const passwordHash = await bcrypt.hash(data.password, SALT_ROUNDS)
-    const [newUser] = await db.insert(users).values({
-      email: data.email,
-      name: data.name,
-      passwordHash,
-      role: data.role,
-    }).returning()
+      const passwordHash = await bcrypt.hash(data.password, SALT_ROUNDS)
+      const [newUser] = await db.insert(users).values({
+        email: data.email,
+        name: data.name,
+        passwordHash,
+        role: data.role,
+      }).returning()
 
-    const session = await useAppSession()
-    await session.update({
-      userId: newUser.id,
-      email: newUser.email,
-      name: newUser.name,
-      role: newUser.role,
-    })
+      const session = await useAppSession()
+      await session.update({
+        userId: newUser.id,
+        email: newUser.email,
+        name: newUser.name,
+        role: newUser.role,
+      })
 
-    return {
-      id: newUser.id,
-      email: newUser.email,
-      name: newUser.name,
-      role: newUser.role,
+      return {
+        id: newUser.id,
+        email: newUser.email,
+        name: newUser.name,
+        role: newUser.role,
+      }
+    } catch (e) {
+      console.error('[AUTH] Register error:', (e as Error).message)
+      throw e
     }
   })
 
 export const login = createServerFn({ method: 'POST' })
   .validator(LoginInputSchema)
   .handler(async ({ data }) => {
-    const db = getDb()
+    try {
+      const db = getDb()
 
-    const [user] = await db.select().from(users).where(eq(users.email, data.email)).limit(1)
-    if (!user) {
-      throw new Error('Invalid email or password')
-    }
+      const [user] = await db.select().from(users).where(eq(users.email, data.email)).limit(1)
+      if (!user) {
+        throw new Error('Invalid email or password')
+      }
 
-    const passwordValid = await bcrypt.compare(data.password, user.passwordHash)
-    if (!passwordValid) {
-      throw new Error('Invalid email or password')
-    }
+      const passwordValid = await bcrypt.compare(data.password, user.passwordHash)
+      if (!passwordValid) {
+        throw new Error('Invalid email or password')
+      }
 
-    await db.delete(sessions).where(eq(sessions.userId, user.id))
+      await db.delete(sessions).where(eq(sessions.userId, user.id))
 
-    const session = await useAppSession()
-    await session.update({
-      userId: user.id,
-      email: user.email,
-      name: user.name,
-      role: user.role,
-    })
+      const session = await useAppSession()
+      await session.update({
+        userId: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+      })
 
-    return {
-      id: user.id,
-      email: user.email,
-      name: user.name,
-      role: user.role,
+      return {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+      }
+    } catch (e) {
+      console.error('[AUTH] Login error:', (e as Error).message)
+      throw e
     }
   })
 
@@ -103,21 +113,26 @@ export const logout = createServerFn({ method: 'POST' })
 
 export const getCurrentUser = createServerFn({ method: 'GET' })
   .handler(async () => {
-    const session = await useAppSession()
-    const data = session.data
+    try {
+      const session = await useAppSession()
+      const data = session.data
 
-    if (!data.userId) {
+      if (!data.userId) {
+        return null
+      }
+
+      const db = getDb()
+      const [user] = await db.select({
+        id: users.id,
+        email: users.email,
+        name: users.name,
+        role: users.role,
+        cooperativeId: users.cooperativeId,
+      }).from(users).where(eq(users.id, data.userId)).limit(1)
+
+      return user || null
+    } catch (e) {
+      console.error('[AUTH] getCurrentUser error:', (e as Error).message)
       return null
     }
-
-    const db = getDb()
-    const [user] = await db.select({
-      id: users.id,
-      email: users.email,
-      name: users.name,
-      role: users.role,
-      cooperativeId: users.cooperativeId,
-    }).from(users).where(eq(users.id, data.userId)).limit(1)
-
-    return user || null
   })
