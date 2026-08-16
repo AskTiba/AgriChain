@@ -5,13 +5,6 @@ import { ShipmentAssignment } from './shipment-assignment'
 import { ShareableManifest, type ManifestEntry } from './shareable-manifest'
 import { useHarvests } from '~/app/hooks/use-harvests'
 
-const MOCK_WAREHOUSES = [
-  { id: 'W1', name: 'Warehouse A', used: 780, total: 1000 },
-  { id: 'W2', name: 'Warehouse B', used: 450, total: 1000 },
-  { id: 'W3', name: 'Warehouse C', used: 920, total: 1000 },
-  { id: 'W4', name: 'Warehouse D', used: 310, total: 1000 },
-]
-
 interface Vehicle {
   id: string
   name: string
@@ -20,11 +13,6 @@ interface Vehicle {
   destination: string
 }
 
-const INITIAL_VEHICLES: Vehicle[] = [
-  { id: 'V1', name: 'Truck A', payload: 5000, driver: 'John Doe', destination: 'Market East' },
-  { id: 'V2', name: 'Truck B', payload: 3000, driver: 'Jane Smith', destination: 'Warehouse North' },
-]
-
 interface Assignment {
   harvestId: string
   vehicleId: string
@@ -32,18 +20,16 @@ interface Assignment {
 
 export function LogisticsPage() {
   const { data: dbHarvests = [] } = useHarvests()
-  const [vehicles, setVehicles] = useState<Vehicle[]>(INITIAL_VEHICLES)
+  const [vehicles, setVehicles] = useState<Vehicle[]>([])
   const [assignments, setAssignments] = useState<Assignment[]>([])
   const [copied, setCopied] = useState(false)
 
-  const harvests = dbHarvests.length > 0
-    ? dbHarvests.map((h) => ({ id: h.id, cropType: h.cropType, quantity: h.quantity, fieldId: h.fieldId }))
-    : MOCK_WAREHOUSES.length > 0 ? [
-        { id: 'H1', cropType: 'Tomatoes', quantity: 450, fieldId: 'Field A' },
-        { id: 'H2', cropType: 'Maize', quantity: 1200, fieldId: 'Field B' },
-        { id: 'H3', cropType: 'Beans', quantity: 300, fieldId: 'Field A' },
-        { id: 'H4', cropType: 'Cabbage', quantity: 600, fieldId: 'Field C' },
-      ] : []
+  const harvests = dbHarvests.map((h) => ({
+    id: h.id,
+    cropType: h.cropType,
+    quantity: h.quantity,
+    fieldId: h.fieldId,
+  }))
 
   const handleAddVehicle = (newVehicle: Omit<Vehicle, 'id'>) => {
     setVehicles((prev) => [
@@ -87,7 +73,7 @@ export function LogisticsPage() {
         <h2 className="mb-6 font-semibold text-[var(--color-text)]" style={{ fontSize: 'clamp(1.125rem, 1.5vw + 0.5rem, 1.5rem)' }}>
           Warehouse Capacity
         </h2>
-        <WarehouseCapacity warehouses={MOCK_WAREHOUSES} />
+        <WarehouseCapacity warehouses={[]} />
       </section>
 
       <section aria-label="Vehicle ledger" className="mb-12">

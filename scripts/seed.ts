@@ -1,3 +1,4 @@
+import 'dotenv/config'
 import { getDb } from '../src/app/db'
 import { harvestEntries, orders } from '../src/app/db/schema'
 

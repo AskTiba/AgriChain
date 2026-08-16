@@ -1,10 +1,17 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
+import { useHarvests } from '~/app/hooks/use-harvests'
+import { useOrders } from '~/app/hooks/use-orders'
 
 export const Route = createFileRoute('/')({
   component: Home,
 })
 
 function Home() {
+  const { data: harvests = [], isLoading: harvestsLoading } = useHarvests()
+  const { data: orders = [], isLoading: ordersLoading } = useOrders()
+
+  const pendingShipments = orders.filter((o) => o.status === 'pending').length
+
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <section className="mb-12 animate-fade-in-up">
@@ -21,10 +28,22 @@ function Home() {
 
       <section aria-label="Cooperative overview stats" className="mb-12">
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 stagger-children">
-          <StatCard label="Active Harvests" value="127" />
-          <StatCard label="Warehouses" value="4" />
-          <StatCard label="Vehicles" value="18" />
-          <StatCard label="Pending Shipments" value="34" />
+          <StatCard
+            label="Active Harvests"
+            value={harvestsLoading ? '...' : String(harvests.length)}
+          />
+          <StatCard
+            label="Orders"
+            value={ordersLoading ? '...' : String(orders.length)}
+          />
+          <StatCard
+            label="Pending Shipments"
+            value={ordersLoading ? '...' : String(pendingShipments)}
+          />
+          <StatCard
+            label="Delivered"
+            value={ordersLoading ? '...' : String(orders.filter((o) => o.status === 'delivered').length)}
+          />
         </div>
       </section>
 
