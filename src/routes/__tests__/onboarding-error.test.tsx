@@ -1,13 +1,31 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { OnboardingPage } from '../../components/onboarding-page'
 
+vi.mock('~/app/server/cooperatives', () => ({
+  completeOnboarding: vi.fn(),
+}))
+
+vi.mock('~/app/hooks/use-auth', () => ({
+  useCurrentUser: () => ({ data: null }),
+}))
+
+vi.mock('~/app/hooks/use-cooperatives', () => ({
+  useCreateCooperative: () => ({ mutate: vi.fn() }),
+}))
+
+import { completeOnboarding } from '~/app/server/cooperatives'
+
 describe('Onboarding Error States', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
   it('shows error message when submission fails', async () => {
+    vi.mocked(completeOnboarding).mockRejectedValue(new Error('Network error'))
     const user = userEvent.setup()
-    const onSubmit = vi.fn().mockRejectedValue(new Error('Network error'))
-    render(<OnboardingPage onSubmit={onSubmit} />)
+    render(<OnboardingPage />)
 
     await user.type(screen.getByLabelText(/cooperative name/i), 'Green Valley Farmers')
     await user.type(screen.getByLabelText(/region/i), 'Western Province')
@@ -20,9 +38,9 @@ describe('Onboarding Error States', () => {
   })
 
   it('preserves form values after error', async () => {
+    vi.mocked(completeOnboarding).mockRejectedValue(new Error('Network error'))
     const user = userEvent.setup()
-    const onSubmit = vi.fn().mockRejectedValue(new Error('Network error'))
-    render(<OnboardingPage onSubmit={onSubmit} />)
+    render(<OnboardingPage />)
 
     const nameInput = screen.getByLabelText(/cooperative name/i)
     const regionInput = screen.getByLabelText(/region/i)
@@ -39,11 +57,11 @@ describe('Onboarding Error States', () => {
   })
 
   it('allows retry after error', async () => {
-    const user = userEvent.setup()
-    const onSubmit = vi.fn()
+    vi.mocked(completeOnboarding)
       .mockRejectedValueOnce(new Error('Network error'))
-      .mockResolvedValueOnce(undefined)
-    render(<OnboardingPage onSubmit={onSubmit} />)
+      .mockResolvedValueOnce({ id: '1', name: 'test', location: 'test', createdBy: null, createdAt: new Date() })
+    const user = userEvent.setup()
+    render(<OnboardingPage />)
 
     await user.type(screen.getByLabelText(/cooperative name/i), 'Green Valley Farmers')
     await user.type(screen.getByLabelText(/region/i), 'Western Province')
@@ -58,6 +76,6 @@ describe('Onboarding Error States', () => {
 
     expect(screen.queryByText(/failed to save profile/i)).not.toBeInTheDocument()
     expect(screen.getByText(/profile saved successfully/i)).toBeInTheDocument()
-    expect(onSubmit).toHaveBeenCalledTimes(2)
+    expect(completeOnboarding).toHaveBeenCalledTimes(2)
   })
 })

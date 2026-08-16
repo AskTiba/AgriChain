@@ -56,6 +56,14 @@ export type NewVehicle = typeof vehicles.$inferInsert
 export type Assignment = typeof assignments.$inferSelect
 export type NewAssignment = typeof assignments.$inferInsert
 
+export const cooperatives = pgTable('cooperatives', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  name: varchar('name', { length: 255 }).notNull(),
+  location: varchar('location', { length: 255 }).notNull(),
+  createdBy: uuid('created_by'),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+})
+
 export const users = pgTable('users', {
   id: uuid('id').primaryKey().defaultRandom(),
   email: varchar('email', { length: 255 }).notNull().unique(),
@@ -64,7 +72,7 @@ export const users = pgTable('users', {
   role: text('role', { enum: ['admin', 'manager', 'driver', 'buyer'] })
     .notNull()
     .default('buyer'),
-  cooperativeId: varchar('cooperative_id', { length: 255 }),
+  cooperativeId: uuid('cooperative_id').references(() => cooperatives.id),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 })
 
@@ -92,3 +100,5 @@ export type Session = typeof sessions.$inferSelect
 export type NewSession = typeof sessions.$inferInsert
 export type Notification = typeof notifications.$inferSelect
 export type NewNotification = typeof notifications.$inferInsert
+export type Cooperative = typeof cooperatives.$inferSelect
+export type NewCooperative = typeof cooperatives.$inferInsert

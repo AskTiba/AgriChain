@@ -3,28 +3,27 @@ import { useState } from 'react'
 import { RoleSelector } from './role-selector'
 import { Wizard } from './wizard'
 import { Input } from './ui/input'
+import { completeOnboarding } from '~/app/server/cooperatives'
+import { useCurrentUser } from '~/app/hooks/use-auth'
 
-interface OnboardingPageProps {
-  onSubmit?: (values: { coopName: string; region: string; role: string }) => Promise<void> | void
-}
-
-export function OnboardingPage({ onSubmit }: OnboardingPageProps) {
+export function OnboardingPage() {
   const [currentStep, setCurrentStep] = useState(0)
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [stepErrors, setStepErrors] = useState<Record<number, string[]>>({})
+  const { data: currentUser } = useCurrentUser()
 
   const form = useForm({
     defaultValues: {
       coopName: '',
       region: '',
-      role: '',
+      role: (currentUser?.role || 'buyer') as 'admin' | 'manager' | 'driver' | 'buyer',
     },
     onSubmit: async ({ value }) => {
       setError(null)
       setSubmitted(false)
       try {
-        await onSubmit?.(value)
+        await completeOnboarding({ data: value })
         setSubmitted(true)
         form.reset()
         setCurrentStep(0)
@@ -76,6 +75,24 @@ export function OnboardingPage({ onSubmit }: OnboardingPageProps) {
       e.toLowerCase().includes(fieldName.toLowerCase())
     )
 
+  if (currentUser?.cooperativeId) {
+    return (
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <section className="mb-12">
+          <h1
+            className="font-bold text-[var(--color-text)]"
+            style={{ fontSize: 'clamp(1.25rem, 2vw + 0.75rem, 1.75rem)' }}
+          >
+            Onboarding Complete
+          </h1>
+          <p className="mt-2 text-base text-[var(--color-text-muted)]">
+            You are already linked to a cooperative. Contact an admin to update your profile.
+          </p>
+        </section>
+      </div>
+    )
+  }
+
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <section className="mb-12 animate-fade-in-up">
@@ -106,157 +123,157 @@ export function OnboardingPage({ onSubmit }: OnboardingPageProps) {
             role="alert"
             aria-live="assertive"
             className="mb-6 rounded-[var(--radius-lg)] border border-[var(--color-danger)]/20 bg-[var(--color-danger)]/10 p-4 text-[var(--color-danger)]"
+          >
+            {error}
+          </div>
+        )}
+
+        <form
+          aria-label="Cooperative Profile"
+          onSubmit={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+          }}
         >
-          {error}
-        </div>
-      )}
+          <Wizard
+            currentStep={currentStep}
+            totalSteps={TOTAL_STEPS}
+            onNext={handleNext}
+            onBack={handleBack}
+            onSubmit={handleSubmit}
+          >
+            {currentStep === 0 && (
+              <div className="space-y-6">
+                <h2 className="font-semibold text-[var(--color-text)]" style={{ fontSize: 'clamp(1.125rem, 1.5vw + 0.5rem, 1.5rem)' }}>
+                  Cooperative Profile
+                </h2>
 
-      <form
-        aria-label="Cooperative Profile"
-        onSubmit={(e) => {
-          e.preventDefault()
-          e.stopPropagation()
-        }}
-      >
-        <Wizard
-          currentStep={currentStep}
-          totalSteps={TOTAL_STEPS}
-          onNext={handleNext}
-          onBack={handleBack}
-          onSubmit={handleSubmit}
-        >
-          {currentStep === 0 && (
-            <div className="space-y-6">
-              <h2 className="font-semibold text-[var(--color-text)]" style={{ fontSize: 'clamp(1.125rem, 1.5vw + 0.5rem, 1.5rem)' }}>
-                Cooperative Profile
-              </h2>
+                <form.Field
+                  name="coopName"
+                  validators={{
+                    onChange: ({ value }) =>
+                      !value ? 'Cooperative name is required' : undefined,
+                  }}
+                >
+                  {(field) => {
+                    const fieldError = field.state.meta.errors.length > 0 ? field.state.meta.errors[0] : undefined
+                    const stepError = hasStepError('cooperative name') ? currentErrors.find((e) => e.toLowerCase().includes('cooperative name')) : undefined
+                    return (
+                      <Input
+                        label="Cooperative Name"
+                        id="coop-name"
+                        type="text"
+                        placeholder="e.g. Green Valley Farmers Co-op"
+                        value={field.state.value}
+                        onChange={(e) => {
+                          field.handleChange(e.target.value)
+                          setStepErrors((prev) => ({ ...prev, 0: [] }))
+                        }}
+                        onBlur={field.handleBlur}
+                        error={fieldError || stepError}
+                      />
+                    )
+                  }}
+                </form.Field>
 
-              <form.Field
-                name="coopName"
-                validators={{
-                  onChange: ({ value }) =>
-                    !value ? 'Cooperative name is required' : undefined,
-                }}
-              >
-                {(field) => {
-                  const fieldError = field.state.meta.errors.length > 0 ? field.state.meta.errors[0] : undefined
-                  const stepError = hasStepError('cooperative name') ? currentErrors.find((e) => e.toLowerCase().includes('cooperative name')) : undefined
-                  return (
-                    <Input
-                      label="Cooperative Name"
-                      id="coop-name"
-                      type="text"
-                      placeholder="e.g. Green Valley Farmers Co-op"
-                      value={field.state.value}
-                      onChange={(e) => {
-                        field.handleChange(e.target.value)
-                        setStepErrors((prev) => ({ ...prev, 0: [] }))
-                      }}
-                      onBlur={field.handleBlur}
-                      error={fieldError || stepError}
-                    />
-                  )
-                }}
-              </form.Field>
+                <form.Field
+                  name="region"
+                  validators={{
+                    onChange: ({ value }) =>
+                      !value ? 'Region is required' : undefined,
+                  }}
+                >
+                  {(field) => {
+                    const fieldError = field.state.meta.errors.length > 0 ? field.state.meta.errors[0] : undefined
+                    const stepError = hasStepError('region') ? currentErrors.find((e) => e.toLowerCase().includes('region')) : undefined
+                    return (
+                      <Input
+                        label="Region"
+                        id="region"
+                        type="text"
+                        placeholder="e.g. Western Province"
+                        value={field.state.value}
+                        onChange={(e) => {
+                          field.handleChange(e.target.value)
+                          setStepErrors((prev) => ({ ...prev, 0: [] }))
+                        }}
+                        onBlur={field.handleBlur}
+                        error={fieldError || stepError}
+                      />
+                    )
+                  }}
+                </form.Field>
+              </div>
+            )}
 
-              <form.Field
-                name="region"
-                validators={{
-                  onChange: ({ value }) =>
-                    !value ? 'Region is required' : undefined,
-                }}
-              >
-                {(field) => {
-                  const fieldError = field.state.meta.errors.length > 0 ? field.state.meta.errors[0] : undefined
-                  const stepError = hasStepError('region') ? currentErrors.find((e) => e.toLowerCase().includes('region')) : undefined
-                  return (
-                    <Input
-                      label="Region"
-                      id="region"
-                      type="text"
-                      placeholder="e.g. Western Province"
-                      value={field.state.value}
-                      onChange={(e) => {
-                        field.handleChange(e.target.value)
-                        setStepErrors((prev) => ({ ...prev, 0: [] }))
-                      }}
-                      onBlur={field.handleBlur}
-                      error={fieldError || stepError}
-                    />
-                  )
-                }}
-              </form.Field>
-            </div>
-          )}
+            {currentStep === 1 && (
+              <div className="space-y-6">
+                <h2 className="font-semibold text-[var(--color-text)]" style={{ fontSize: 'clamp(1.125rem, 1.5vw + 0.5rem, 1.5rem)' }}>
+                  Select Your Role
+                </h2>
 
-          {currentStep === 1 && (
-            <div className="space-y-6">
-              <h2 className="font-semibold text-[var(--color-text)]" style={{ fontSize: 'clamp(1.125rem, 1.5vw + 0.5rem, 1.5rem)' }}>
-                Select Your Role
-              </h2>
-
-              <form.Field
-                name="role"
-                validators={{
-                  onChange: ({ value }) =>
-                    !value ? 'Role is required' : undefined,
-                }}
-              >
-                {(field) => (
-                  <div>
-                    <RoleSelector
-                      value={field.state.value}
-                      onChange={field.handleChange}
-                    />
-                    {field.state.meta.errors.length > 0 && (
-                      <p id="role-error" role="alert" className="mt-1 text-sm text-[var(--color-danger)]">
-                        {field.state.meta.errors[0]}
-                      </p>
-                    )}
-                  </div>
-                )}
-              </form.Field>
-            </div>
-          )}
-
-          {currentStep === 2 && (
-            <div className="space-y-6">
-              <h2 className="font-semibold text-[var(--color-text)]" style={{ fontSize: 'clamp(1.125rem, 1.5vw + 0.5rem, 1.5rem)' }}>
-                Review Your Profile
-              </h2>
-
-              <form.Subscribe
-                selector={(state) => state.values}
-              >
-                {(values) => (
-                  <dl className="space-y-4 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-background)] p-4">
-                    <div className="flex justify-between">
-                      <dt className="text-sm text-[var(--color-text-muted)]">Cooperative Name</dt>
-                      <dd className="text-sm font-medium text-[var(--color-text)]">{values.coopName || '—'}</dd>
+                <form.Field
+                  name="role"
+                  validators={{
+                    onChange: ({ value }) =>
+                      !value ? 'Role is required' : undefined,
+                  }}
+                >
+                  {(field) => (
+                    <div>
+                      <RoleSelector
+                        value={field.state.value}
+                        onChange={(role) => field.handleChange(role as 'admin' | 'manager' | 'driver' | 'buyer')}
+                      />
+                      {field.state.meta.errors.length > 0 && (
+                        <p id="role-error" role="alert" className="mt-1 text-sm text-[var(--color-danger)]">
+                          {field.state.meta.errors[0]}
+                        </p>
+                      )}
                     </div>
-                    <div className="flex justify-between">
-                      <dt className="text-sm text-[var(--color-text-muted)]">Region</dt>
-                      <dd className="text-sm font-medium text-[var(--color-text)]">{values.region || '—'}</dd>
-                    </div>
-                    <div className="flex justify-between">
-                      <dt className="text-sm text-[var(--color-text-muted)]">Role</dt>
-                      <dd className="text-sm font-medium text-[var(--color-text)]">{values.role || '—'}</dd>
-                    </div>
-                  </dl>
-                )}
-              </form.Subscribe>
-            </div>
-          )}
+                  )}
+                </form.Field>
+              </div>
+            )}
 
-          {currentErrors.length > 0 && currentStep === 1 && (
-            <div role="alert" className="mt-4 space-y-1">
-              {currentErrors.map((err, i) => (
-                <p key={i} className="text-sm text-[var(--color-danger)]">{err}</p>
-              ))}
-            </div>
-          )}
-        </Wizard>
-      </form>
+            {currentStep === 2 && (
+              <div className="space-y-6">
+                <h2 className="font-semibold text-[var(--color-text)]" style={{ fontSize: 'clamp(1.125rem, 1.5vw + 0.5rem, 1.5rem)' }}>
+                  Review Your Profile
+                </h2>
+
+                <form.Subscribe
+                  selector={(state) => state.values}
+                >
+                  {(values) => (
+                    <dl className="space-y-4 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-background)] p-4">
+                      <div className="flex justify-between">
+                        <dt className="text-sm text-[var(--color-text-muted)]">Cooperative Name</dt>
+                        <dd className="text-sm font-medium text-[var(--color-text)]">{values.coopName || '—'}</dd>
+                      </div>
+                      <div className="flex justify-between">
+                        <dt className="text-sm text-[var(--color-text-muted)]">Region</dt>
+                        <dd className="text-sm font-medium text-[var(--color-text)]">{values.region || '—'}</dd>
+                      </div>
+                      <div className="flex justify-between">
+                        <dt className="text-sm text-[var(--color-text-muted)]">Role</dt>
+                        <dd className="text-sm font-medium text-[var(--color-text)]">{values.role || '—'}</dd>
+                      </div>
+                    </dl>
+                  )}
+                </form.Subscribe>
+              </div>
+            )}
+
+            {currentErrors.length > 0 && currentStep === 1 && (
+              <div role="alert" className="mt-4 space-y-1">
+                {currentErrors.map((err, i) => (
+                  <p key={i} className="text-sm text-[var(--color-danger)]">{err}</p>
+                ))}
+              </div>
+            )}
+          </Wizard>
+        </form>
       </div>
     </div>
   )

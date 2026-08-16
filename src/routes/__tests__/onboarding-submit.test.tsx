@@ -1,13 +1,31 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { OnboardingPage } from '../../components/onboarding-page'
 
+vi.mock('~/app/server/cooperatives', () => ({
+  completeOnboarding: vi.fn(),
+}))
+
+vi.mock('~/app/hooks/use-auth', () => ({
+  useCurrentUser: () => ({ data: null }),
+}))
+
+vi.mock('~/app/hooks/use-cooperatives', () => ({
+  useCreateCooperative: () => ({ mutate: vi.fn() }),
+}))
+
+import { completeOnboarding } from '~/app/server/cooperatives'
+
 describe('Onboarding Form Submission', () => {
-  it('calls onSubmit with form values when valid', async () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('calls completeOnboarding with form values when valid', async () => {
+    vi.mocked(completeOnboarding).mockResolvedValue({ id: '1', name: 'test', location: 'test', createdBy: null, createdAt: new Date() })
     const user = userEvent.setup()
-    const onSubmit = vi.fn()
-    render(<OnboardingPage onSubmit={onSubmit} />)
+    render(<OnboardingPage />)
 
     await user.type(screen.getByLabelText(/cooperative name/i), 'Green Valley Farmers')
     await user.type(screen.getByLabelText(/region/i), 'Western Province')
@@ -18,28 +36,29 @@ describe('Onboarding Form Submission', () => {
 
     await user.click(screen.getByRole('button', { name: /submit/i }))
 
-    expect(onSubmit).toHaveBeenCalledWith({
-      coopName: 'Green Valley Farmers',
-      region: 'Western Province',
-      role: 'admin',
+    expect(completeOnboarding).toHaveBeenCalledWith({
+      data: {
+        coopName: 'Green Valley Farmers',
+        region: 'Western Province',
+        role: 'admin',
+      },
     })
   })
 
-  it('does not call onSubmit when fields are empty', async () => {
+  it('does not call completeOnboarding when fields are empty', async () => {
     const user = userEvent.setup()
-    const onSubmit = vi.fn()
-    render(<OnboardingPage onSubmit={onSubmit} />)
+    render(<OnboardingPage />)
 
     await user.click(screen.getByRole('button', { name: /next/i }))
 
-    expect(onSubmit).not.toHaveBeenCalled()
+    expect(completeOnboarding).not.toHaveBeenCalled()
     expect(screen.getByText('Step 1 of 3')).toBeInTheDocument()
   })
 
   it('shows success message after successful submission', async () => {
+    vi.mocked(completeOnboarding).mockResolvedValue({ id: '1', name: 'test', location: 'test', createdBy: null, createdAt: new Date() })
     const user = userEvent.setup()
-    const onSubmit = vi.fn()
-    render(<OnboardingPage onSubmit={onSubmit} />)
+    render(<OnboardingPage />)
 
     await user.type(screen.getByLabelText(/cooperative name/i), 'Green Valley Farmers')
     await user.type(screen.getByLabelText(/region/i), 'Western Province')
@@ -52,9 +71,9 @@ describe('Onboarding Form Submission', () => {
   })
 
   it('resets form after successful submission', async () => {
+    vi.mocked(completeOnboarding).mockResolvedValue({ id: '1', name: 'test', location: 'test', createdBy: null, createdAt: new Date() })
     const user = userEvent.setup()
-    const onSubmit = vi.fn()
-    render(<OnboardingPage onSubmit={onSubmit} />)
+    render(<OnboardingPage />)
 
     const nameInput = screen.getByLabelText(/cooperative name/i)
     const regionInput = screen.getByLabelText(/region/i)
