@@ -9,13 +9,22 @@ import {
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client'
 import * as React from 'react'
 import type { QueryClient } from '@tanstack/react-query'
+import { createServerFn } from '@tanstack/react-start'
 import { localStoragePersister } from '~/router'
 import { DefaultCatchBoundary } from '~/components/DefaultCatchBoundary'
 import { NotFound } from '~/components/NotFound'
+import { getCurrentUser } from '~/app/server/auth'
+import { useLogout } from '~/app/hooks/use-auth'
+import type { SafeUser } from '~/app/db/schema'
 import appCss from '~/styles/app.css?url'
+
+const fetchUser = createServerFn({ method: 'GET' }).handler(async () => {
+  return await getCurrentUser()
+})
 
 export const Route = createRootRouteWithContext<{
   queryClient: QueryClient
+  user: SafeUser | null
 }>()({
   head: () => ({
     meta: [
@@ -35,6 +44,15 @@ export const Route = createRootRouteWithContext<{
     </RootDocument>
   ),
   notFoundComponent: () => <NotFound />,
+  beforeLoad: async () => {
+    let user: SafeUser | null = null
+    try {
+      user = await fetchUser()
+    } catch {
+      // Not authenticated — that's fine
+    }
+    return { user }
+  },
   component: RootComponent,
 })
 
@@ -43,6 +61,47 @@ function RootComponent() {
     <RootDocument>
       <Outlet />
     </RootDocument>
+  )
+}
+
+function AuthButtons({ user }: { user: { name: string } }) {
+  const logoutMutation = useLogout()
+
+  const handleLogout = async () => {
+    await logoutMutation.mutateAsync()
+    window.location.href = '/login'
+  }
+
+  return (
+    <div className="hidden items-center gap-3 md:flex">
+      <span className="text-sm text-[var(--color-text-muted)]">{user.name}</span>
+      <button
+        onClick={handleLogout}
+        disabled={logoutMutation.isPending}
+        className="inline-flex min-h-[44px] cursor-pointer items-center rounded-[var(--radius-md)] border border-[var(--color-border)] px-4 py-2 text-sm font-medium text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-surface)] hover:text-[var(--color-text)] disabled:opacity-50"
+      >
+        {logoutMutation.isPending ? 'Signing out...' : 'Sign Out'}
+      </button>
+    </div>
+  )
+}
+
+function MobileLogoutButton() {
+  const logoutMutation = useLogout()
+
+  const handleLogout = async () => {
+    await logoutMutation.mutateAsync()
+    window.location.href = '/login'
+  }
+
+  return (
+    <button
+      onClick={handleLogout}
+      disabled={logoutMutation.isPending}
+      className="block w-full cursor-pointer px-3 py-2.5 text-left text-sm font-medium text-[var(--color-danger)] transition-colors hover:bg-[var(--color-surface)] disabled:opacity-50"
+    >
+      {logoutMutation.isPending ? 'Signing out...' : 'Sign Out'}
+    </button>
   )
 }
 
@@ -89,6 +148,8 @@ function RootDocument({ children }: { children: React.ReactNode }) {
     return (localStorage.getItem('theme') as ThemeMode) || 'system'
   })
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false)
+  const routeContext = Route.useRouteContext()
+  const user = routeContext.user
 
   React.useEffect(() => {
     const resolved = resolveTheme(mode)
@@ -199,6 +260,26 @@ function RootDocument({ children }: { children: React.ReactNode }) {
                       )}
                     </button>
 
+                    {/* Auth buttons - desktop */}
+                    {user ? (
+                      <AuthButtons user={user} />
+                    ) : (
+                      <div className="hidden items-center gap-2 md:flex">
+                        <Link
+                          to="/login"
+                          className="inline-flex min-h-[44px] cursor-pointer items-center rounded-[var(--radius-md)] px-4 py-2 text-sm font-medium text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-surface)] hover:text-[var(--color-text)]"
+                        >
+                          Sign In
+                        </Link>
+                        <Link
+                          to="/register"
+                          className="inline-flex min-h-[44px] cursor-pointer items-center rounded-[var(--radius-md)] bg-[var(--color-primary)] px-4 py-2 text-sm font-medium text-[var(--color-primary-foreground)] transition-colors hover:bg-[var(--color-primary-hover)]"
+                        >
+                          Sign Up
+                        </Link>
+                      </div>
+                    )}
+
                     {/* Mobile menu button */}
                     <button
                       onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -237,6 +318,33 @@ function RootDocument({ children }: { children: React.ReactNode }) {
                         {link.label}
                       </Link>
                     ))}
+                      <div className="border-t border-[var(--color-border-subtle)] mt-2 pt-2">
+                      {user ? (
+                        <>
+                          <div className="px-3 py-2 text-sm text-[var(--color-text-muted)]">
+                            Signed in as <span className="font-medium text-[var(--color-text)]">{user.name}</span>
+                          </div>
+                          <MobileLogoutButton />
+                        </>
+                      ) : (
+                        <>
+                          <Link
+                            to="/login"
+                            onClick={() => setMobileMenuOpen(false)}
+                            className="block cursor-pointer px-3 py-2.5 text-sm font-medium text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-surface)] hover:text-[var(--color-text)]"
+                          >
+                            Sign In
+                          </Link>
+                          <Link
+                            to="/register"
+                            onClick={() => setMobileMenuOpen(false)}
+                            className="block cursor-pointer px-3 py-2.5 text-sm font-medium text-[var(--color-primary)] transition-colors hover:bg-[var(--color-surface)]"
+                          >
+                            Sign Up
+                          </Link>
+                        </>
+                      )}
+                    </div>
                   </nav>
                 )}
               </div>

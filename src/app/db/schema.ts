@@ -1,4 +1,4 @@
-import { pgTable, uuid, text, integer, timestamp } from 'drizzle-orm/pg-core'
+import { pgTable, uuid, text, integer, timestamp, varchar } from 'drizzle-orm/pg-core'
 
 export const harvestEntries = pgTable('harvest_entries', {
   id: uuid('id').primaryKey().defaultRandom(),
@@ -52,3 +52,28 @@ export type Vehicle = typeof vehicles.$inferSelect
 export type NewVehicle = typeof vehicles.$inferInsert
 export type Assignment = typeof assignments.$inferSelect
 export type NewAssignment = typeof assignments.$inferInsert
+
+export const users = pgTable('users', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  email: varchar('email', { length: 255 }).notNull().unique(),
+  name: varchar('name', { length: 255 }).notNull(),
+  passwordHash: text('password_hash').notNull(),
+  role: text('role', { enum: ['admin', 'manager', 'driver', 'buyer'] })
+    .notNull()
+    .default('buyer'),
+  cooperativeId: varchar('cooperative_id', { length: 255 }),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+})
+
+export const sessions = pgTable('sessions', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').references(() => users.id).notNull(),
+  expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+})
+
+export type User = typeof users.$inferSelect
+export type NewUser = typeof users.$inferInsert
+export type SafeUser = Omit<User, 'passwordHash' | 'createdAt'>
+export type Session = typeof sessions.$inferSelect
+export type NewSession = typeof sessions.$inferInsert
