@@ -25,15 +25,23 @@ export const orders = pgTable('orders', {
 export const vehicles = pgTable('vehicles', {
   id: uuid('id').primaryKey().defaultRandom(),
   name: text('name').notNull(),
-  payload: integer('payload').notNull(),
-  driver: text('driver').notNull(),
-  destination: text('destination').notNull(),
+  type: text('type', { enum: ['truck', 'pickup', 'motorcycle', 'other'] })
+    .notNull()
+    .default('truck'),
+  plateNumber: text('plate_number'),
+  payloadCapacity: integer('payload_capacity').notNull(),
+  status: text('status', { enum: ['available', 'in-use', 'maintenance'] })
+    .notNull()
+    .default('available'),
 })
 
 export const assignments = pgTable('assignments', {
   id: uuid('id').primaryKey().defaultRandom(),
   harvestId: uuid('harvest_id').references(() => harvestEntries.id),
   vehicleId: uuid('vehicle_id').references(() => vehicles.id),
+  driverName: text('driver_name').notNull(),
+  destination: text('destination').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 })
 
 export type HarvestEntry = typeof harvestEntries.$inferSelect

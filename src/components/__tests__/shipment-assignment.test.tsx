@@ -9,8 +9,8 @@ const mockHarvests = [
 ]
 
 const mockVehicles = [
-  { id: 'V1', name: 'Truck A', payload: 5000, driver: 'John Doe', destination: 'Market East' },
-  { id: 'V2', name: 'Truck B', payload: 3000, driver: 'Jane Smith', destination: 'Warehouse North' },
+  { id: 'V1', name: 'Truck A' },
+  { id: 'V2', name: 'Blue Pickup' },
 ]
 
 const mockAssigned = [
@@ -32,20 +32,6 @@ describe('ShipmentAssignment', () => {
     expect(screen.getByText('wheat')).toBeInTheDocument()
   })
 
-  it('renders available vehicles for assignment', () => {
-    render(
-      <ShipmentAssignment
-        harvests={mockHarvests}
-        vehicles={mockVehicles}
-        assigned={[]}
-        onAssign={() => {}}
-      />
-    )
-
-    expect(screen.getAllByText('Truck A').length).toBeGreaterThan(0)
-    expect(screen.getAllByText('Truck B').length).toBeGreaterThan(0)
-  })
-
   it('shows assign button for each unassigned harvest', () => {
     render(
       <ShipmentAssignment
@@ -56,11 +42,29 @@ describe('ShipmentAssignment', () => {
       />
     )
 
-    const assignButtons = screen.getAllByRole('button')
-    expect(assignButtons.length).toBe(4)
+    const assignButtons = screen.getAllByRole('button', { name: /assign/i })
+    expect(assignButtons.length).toBe(2)
   })
 
-  it('calls onAssign with harvest and vehicle IDs', async () => {
+  it('expands inline form when assign is clicked', async () => {
+    const user = userEvent.setup()
+    render(
+      <ShipmentAssignment
+        harvests={[mockHarvests[0]]}
+        vehicles={mockVehicles}
+        assigned={[]}
+        onAssign={() => {}}
+      />
+    )
+
+    await user.click(screen.getByRole('button', { name: /assign/i }))
+
+    expect(screen.getByLabelText(/driver name/i)).toBeInTheDocument()
+    expect(screen.getByLabelText(/destination/i)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /confirm assignment/i })).toBeInTheDocument()
+  })
+
+  it('calls onAssign with all fields when confirmed', async () => {
     const user = userEvent.setup()
     const onAssign = vi.fn()
     render(
@@ -72,9 +76,12 @@ describe('ShipmentAssignment', () => {
       />
     )
 
-    await user.click(screen.getByRole('button', { name: 'Truck A' }))
+    await user.click(screen.getByRole('button', { name: /assign/i }))
+    await user.type(screen.getByLabelText(/driver name/i), 'John Doe')
+    await user.type(screen.getByLabelText(/destination/i), 'Market East')
+    await user.click(screen.getByRole('button', { name: /confirm assignment/i }))
 
-    expect(onAssign).toHaveBeenCalledWith('H1', 'V1')
+    expect(onAssign).toHaveBeenCalledWith('H1', 'V1', 'John Doe', 'Market East')
   })
 
   it('hides assigned harvests from unassigned list', () => {
@@ -102,5 +109,18 @@ describe('ShipmentAssignment', () => {
     )
 
     expect(screen.getByText(/all harvests assigned/i)).toBeInTheDocument()
+  })
+
+  it('shows message to add vehicle first when no vehicles', () => {
+    render(
+      <ShipmentAssignment
+        harvests={mockHarvests}
+        vehicles={[]}
+        assigned={[]}
+        onAssign={() => {}}
+      />
+    )
+
+    expect(screen.getByText(/add a vehicle first/i)).toBeInTheDocument()
   })
 })

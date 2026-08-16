@@ -1,29 +1,54 @@
 import { useForm } from '@tanstack/react-form'
 import { Input } from './ui/input'
+import { Select } from './ui/select'
 
 interface Vehicle {
   id: string
   name: string
-  payload: number
-  driver: string
-  destination: string
+  type: string
+  plateNumber: string | null
+  payloadCapacity: number
+  status: string
 }
 
 interface VehicleLedgerProps {
   vehicles: Vehicle[]
-  onAdd: (vehicle: Omit<Vehicle, 'id'>) => void
+  onAdd: (vehicle: {
+    name: string
+    type: 'truck' | 'pickup' | 'motorcycle' | 'other'
+    plateNumber?: string | null
+    payloadCapacity: number
+  }) => void
+}
+
+const VEHICLE_TYPES = [
+  { value: 'truck', label: 'Truck' },
+  { value: 'pickup', label: 'Pickup' },
+  { value: 'motorcycle', label: 'Motorcycle' },
+  { value: 'other', label: 'Other' },
+]
+
+const STATUS_LABELS: Record<string, string> = {
+  available: 'Available',
+  'in-use': 'In Use',
+  maintenance: 'Maintenance',
 }
 
 export function VehicleLedger({ vehicles, onAdd }: VehicleLedgerProps) {
   const form = useForm({
     defaultValues: {
       name: '',
-      payload: 0,
-      driver: '',
-      destination: '',
+      type: 'truck' as 'truck' | 'pickup' | 'motorcycle' | 'other',
+      plateNumber: '',
+      payloadCapacity: 0,
     },
     onSubmit: async ({ value }) => {
-      onAdd(value)
+      onAdd({
+        name: value.name,
+        type: value.type,
+        plateNumber: value.plateNumber || null,
+        payloadCapacity: value.payloadCapacity,
+      })
       form.reset()
     },
   })
@@ -55,7 +80,7 @@ export function VehicleLedger({ vehicles, onAdd }: VehicleLedgerProps) {
                   label="Vehicle Name"
                   id="vehicle-name"
                   type="text"
-                  placeholder="e.g. Truck A"
+                  placeholder="e.g. Blue Pickup, Main Truck"
                   value={field.state.value}
                   onChange={(e) => field.handleChange(e.target.value)}
                   onBlur={field.handleBlur}
@@ -65,10 +90,42 @@ export function VehicleLedger({ vehicles, onAdd }: VehicleLedgerProps) {
             </form.Field>
 
             <form.Field
-              name="payload"
+              name="type"
+            >
+              {(field) => (
+                <Select
+                  label="Vehicle Type"
+                  id="vehicle-type"
+                  placeholder="Select type"
+                  options={VEHICLE_TYPES}
+                  value={field.state.value}
+                  onChange={(e) => field.handleChange(e.target.value as 'truck' | 'pickup' | 'motorcycle' | 'other')}
+                  onBlur={field.handleBlur}
+                />
+              )}
+            </form.Field>
+
+            <form.Field
+              name="plateNumber"
+            >
+              {(field) => (
+                <Input
+                  label="Plate Number (optional)"
+                  id="plate-number"
+                  type="text"
+                  placeholder="e.g. KCA 123B"
+                  value={field.state.value}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  onBlur={field.handleBlur}
+                />
+              )}
+            </form.Field>
+
+            <form.Field
+              name="payloadCapacity"
               validators={{
                 onChange: ({ value }) => {
-                  if (!value || value <= 0) return 'Payload must be greater than 0'
+                  if (!value || value <= 0) return 'Capacity must be greater than 0'
                   return undefined
                 },
               }}
@@ -76,52 +133,12 @@ export function VehicleLedger({ vehicles, onAdd }: VehicleLedgerProps) {
               {(field) => (
                 <Input
                   label="Payload Capacity (kg)"
-                  id="payload"
+                  id="payload-capacity"
                   type="number"
                   min="0"
                   placeholder="e.g. 5000"
                   value={field.state.value || ''}
                   onChange={(e) => field.handleChange(parseFloat(e.target.value) || 0)}
-                  onBlur={field.handleBlur}
-                  error={field.state.meta.errors.length > 0 ? field.state.meta.errors[0] : undefined}
-                />
-              )}
-            </form.Field>
-
-            <form.Field
-              name="driver"
-              validators={{
-                onChange: ({ value }) => (!value ? 'Driver name is required' : undefined),
-              }}
-            >
-              {(field) => (
-                <Input
-                  label="Driver Name"
-                  id="driver"
-                  type="text"
-                  placeholder="e.g. John Doe"
-                  value={field.state.value}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                  onBlur={field.handleBlur}
-                  error={field.state.meta.errors.length > 0 ? field.state.meta.errors[0] : undefined}
-                />
-              )}
-            </form.Field>
-
-            <form.Field
-              name="destination"
-              validators={{
-                onChange: ({ value }) => (!value ? 'Destination is required' : undefined),
-              }}
-            >
-              {(field) => (
-                <Input
-                  label="Destination"
-                  id="destination"
-                  type="text"
-                  placeholder="e.g. Market East"
-                  value={field.state.value}
-                  onChange={(e) => field.handleChange(e.target.value)}
                   onBlur={field.handleBlur}
                   error={field.state.meta.errors.length > 0 ? field.state.meta.errors[0] : undefined}
                 />
@@ -150,18 +167,30 @@ export function VehicleLedger({ vehicles, onAdd }: VehicleLedgerProps) {
             <thead>
               <tr className="border-b border-[var(--color-border-subtle)] bg-[var(--color-surface)]">
                 <th scope="col" className="px-4 py-3 font-medium text-[var(--color-text)]">Vehicle</th>
-                <th scope="col" className="px-4 py-3 font-medium text-[var(--color-text)]">Payload</th>
-                <th scope="col" className="px-4 py-3 font-medium text-[var(--color-text)]">Driver</th>
-                <th scope="col" className="px-4 py-3 font-medium text-[var(--color-text)]">Destination</th>
+                <th scope="col" className="px-4 py-3 font-medium text-[var(--color-text)]">Type</th>
+                <th scope="col" className="px-4 py-3 font-medium text-[var(--color-text)]">Plate</th>
+                <th scope="col" className="px-4 py-3 font-medium text-[var(--color-text)]">Capacity</th>
+                <th scope="col" className="px-4 py-3 font-medium text-[var(--color-text)]">Status</th>
               </tr>
             </thead>
             <tbody>
               {vehicles.map((v) => (
                 <tr key={v.id} className="border-b border-[var(--color-border-subtle)] last:border-b-0">
                   <td className="px-4 py-3 font-medium text-[var(--color-text)]">{v.name}</td>
-                  <td className="px-4 py-3 text-[var(--color-text)]">{v.payload} kg</td>
-                  <td className="px-4 py-3 text-[var(--color-text)]">{v.driver}</td>
-                  <td className="px-4 py-3 text-[var(--color-text-muted)]">{v.destination}</td>
+                  <td className="px-4 py-3 text-[var(--color-text-muted)] capitalize">{v.type}</td>
+                  <td className="px-4 py-3 text-[var(--color-text-muted)] font-mono text-xs">{v.plateNumber || '—'}</td>
+                  <td className="px-4 py-3 text-[var(--color-text)]">{v.payloadCapacity} kg</td>
+                  <td className="px-4 py-3">
+                    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                      v.status === 'available'
+                        ? 'bg-[var(--color-success)]/10 text-[var(--color-success)]'
+                        : v.status === 'in-use'
+                          ? 'bg-[var(--color-info)]/10 text-[var(--color-info)]'
+                          : 'bg-[var(--color-warning)]/10 text-[var(--color-warning)]'
+                    }`}>
+                      {STATUS_LABELS[v.status] || v.status}
+                    </span>
+                  </td>
                 </tr>
               ))}
             </tbody>

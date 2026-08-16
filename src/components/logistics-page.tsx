@@ -4,24 +4,15 @@ import { VehicleLedger } from './vehicle-ledger'
 import { ShipmentAssignment } from './shipment-assignment'
 import { ShareableManifest, type ManifestEntry } from './shareable-manifest'
 import { useHarvests } from '~/app/hooks/use-harvests'
-
-interface Vehicle {
-  id: string
-  name: string
-  payload: number
-  driver: string
-  destination: string
-}
-
-interface Assignment {
-  harvestId: string
-  vehicleId: string
-}
+import { useVehicles, useAddVehicle } from '~/app/hooks/use-vehicles'
+import { useAssignments, useAddAssignment } from '~/app/hooks/use-assignments'
 
 export function LogisticsPage() {
   const { data: dbHarvests = [] } = useHarvests()
-  const [vehicles, setVehicles] = useState<Vehicle[]>([])
-  const [assignments, setAssignments] = useState<Assignment[]>([])
+  const { data: dbVehicles = [] } = useVehicles()
+  const { data: dbAssignments = [] } = useAssignments()
+  const addVehicle = useAddVehicle()
+  const addAssignment = useAddAssignment()
   const [copied, setCopied] = useState(false)
 
   const harvests = dbHarvests.map((h) => ({
@@ -31,29 +22,48 @@ export function LogisticsPage() {
     fieldId: h.fieldId,
   }))
 
-  const handleAddVehicle = (newVehicle: Omit<Vehicle, 'id'>) => {
-    setVehicles((prev) => [
-      ...prev,
-      { ...newVehicle, id: crypto.randomUUID() },
-    ])
+  const vehicles = dbVehicles.map((v) => ({
+    id: v.id,
+    name: v.name,
+    type: v.type,
+    plateNumber: v.plateNumber,
+    payloadCapacity: v.payloadCapacity,
+    status: v.status,
+  }))
+
+  const assignments = dbAssignments.map((a) => ({
+    harvestId: a.harvestId ?? '',
+    vehicleId: a.vehicleId ?? '',
+    driverName: a.driverName,
+    destination: a.destination,
+  }))
+
+  const handleAddVehicle = (newVehicle: {
+    name: string
+    type: 'truck' | 'pickup' | 'motorcycle' | 'other'
+    plateNumber?: string | null
+    payloadCapacity: number
+  }) => {
+    addVehicle.mutate(newVehicle)
   }
 
-  const handleAssign = (harvestId: string, vehicleId: string) => {
-    setAssignments((prev) => [...prev, { harvestId, vehicleId }])
+  const handleAssign = (harvestId: string, vehicleId: string, driverName: string, destination: string) => {
+    addAssignment.mutate({ harvestId, vehicleId, driverName, destination })
   }
 
   const manifestEntries: ManifestEntry[] = assignments.map((a) => {
-    const harvest = harvests.find((h) => h.id === a.harvestId)!
-    const vehicle = vehicles.find((v) => v.id === a.vehicleId)!
+    const harvest = harvests.find((h) => h.id === a.harvestId)
+    const vehicle = vehicles.find((v) => v.id === a.vehicleId)
+    if (!harvest || !vehicle) return null
     return {
       vehicleName: vehicle.name,
-      driver: vehicle.driver,
-      destination: vehicle.destination,
+      driver: a.driverName,
+      destination: a.destination,
       cropType: harvest.cropType,
       quantity: harvest.quantity,
       fieldId: harvest.fieldId,
     }
-  })
+  }).filter(Boolean) as ManifestEntry[]
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
