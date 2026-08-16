@@ -1,6 +1,19 @@
 import { getDb } from '../src/app/db'
 import { harvestEntries, orders } from '../src/app/db/schema'
-import { sampleHarvests, sampleOrders } from '../src/app/lib/seed-data'
+
+const sampleHarvests = [
+  { cropType: 'Maize', qualityGrade: 'A', quantity: 500, fieldId: 'FIELD-001' },
+  { cropType: 'Beans', qualityGrade: 'B', quantity: 200, fieldId: 'FIELD-002' },
+  { cropType: 'Tomatoes', qualityGrade: 'A', quantity: 150, fieldId: 'FIELD-003' },
+  { cropType: 'Cabbage', qualityGrade: 'C', quantity: 300, fieldId: 'FIELD-004' },
+  { cropType: 'Potatoes', qualityGrade: 'A', quantity: 400, fieldId: 'FIELD-005' },
+]
+
+const sampleOrders = [
+  { orderNumber: 'ORD-000001', buyerId: 'buyer-001', quantity: 100, status: 'pending' as const, harvestIndex: 0 },
+  { orderNumber: 'ORD-000002', buyerId: 'buyer-001', quantity: 50, status: 'confirmed' as const, harvestIndex: 1 },
+  { orderNumber: 'ORD-000003', buyerId: 'buyer-002', quantity: 75, status: 'delivered' as const, harvestIndex: 2 },
+]
 
 async function seed() {
   const db = getDb()
@@ -16,17 +29,15 @@ async function seed() {
 
   console.log(`Inserted ${insertedHarvests.length} harvest entries`)
 
-  const harvestIdMap = new Map<string, string>()
-  sampleHarvests.forEach((sample, index) => {
-    harvestIdMap.set(sample.fieldId, insertedHarvests[index].id)
-  })
-
-  const ordersWithIds = sampleOrders.map((order) => ({
-    ...order,
-    harvestId: harvestIdMap.get(order.harvestId) ?? insertedHarvests[0].id,
+  const ordersWithHarvestIds = sampleOrders.map((order) => ({
+    orderNumber: order.orderNumber,
+    buyerId: order.buyerId,
+    quantity: order.quantity,
+    status: order.status,
+    harvestId: insertedHarvests[order.harvestIndex].id,
   }))
 
-  const insertedOrders = await db.insert(orders).values(ordersWithIds).returning()
+  const insertedOrders = await db.insert(orders).values(ordersWithHarvestIds).returning()
 
   console.log(`Inserted ${insertedOrders.length} orders`)
   console.log('Seeding complete!')
