@@ -13,6 +13,7 @@ export function useOrders() {
   return useQuery({
     queryKey: ['orders'],
     queryFn: () => fetchOrders(),
+    enabled: typeof window !== 'undefined',
   })
 }
 
@@ -20,6 +21,7 @@ export function useOrdersByBuyer(buyerId: string) {
   return useQuery({
     queryKey: ['orders', buyerId],
     queryFn: () => fetchOrdersByBuyer({ data: { buyerId } }),
+    enabled: typeof window !== 'undefined',
   })
 }
 
@@ -27,6 +29,7 @@ export function useOrderByOrderNumber(orderNumber: string) {
   return useQuery({
     queryKey: ['orders', orderNumber],
     queryFn: () => fetchOrderByOrderNumber({ data: { orderNumber } }),
+    enabled: typeof window !== 'undefined',
   })
 }
 

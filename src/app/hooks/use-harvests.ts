@@ -12,6 +12,7 @@ export function useHarvests() {
   return useQuery({
     queryKey: HARVESTS_QUERY_KEY,
     queryFn: () => fetchHarvests(),
+    enabled: typeof window !== 'undefined',
   })
 }
 
