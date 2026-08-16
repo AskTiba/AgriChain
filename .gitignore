@@ -36,3 +36,4 @@ pnpm-debug.log*
 .opencode/
 .devpartner/
 AGENTS.md
+opencode.jsonc
