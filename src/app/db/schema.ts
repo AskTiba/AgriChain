@@ -14,11 +14,13 @@ export const orders = pgTable('orders', {
   id: uuid('id').primaryKey().defaultRandom(),
   orderNumber: text('order_number').notNull().unique(),
   harvestId: uuid('harvest_id').references(() => harvestEntries.id),
-  buyerId: text('buyer_id').notNull(),
+  buyerId: uuid('buyer_id').references(() => users.id).notNull(),
   quantity: integer('quantity').notNull(),
-  status: text('status', { enum: ['pending', 'confirmed', 'delivered'] })
+  status: text('status', { enum: ['pending', 'confirmed', 'in-transit', 'delivered'] })
     .notNull()
     .default('pending'),
+  confirmedBy: uuid('confirmed_by').references(() => users.id),
+  assignedDriverId: uuid('assigned_driver_id').references(() => users.id),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 })

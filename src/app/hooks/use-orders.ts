@@ -4,6 +4,8 @@ import {
   fetchOrdersByBuyer,
   fetchOrderByOrderNumber,
   addOrder,
+  confirmOrder,
+  assignDriver,
   updateOrderStatus,
   deleteOrder,
 } from '~/app/server/orders'
@@ -47,12 +49,35 @@ export function useAddOrder() {
   })
 }
 
+export function useConfirmOrder() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (id: string) => confirmOrder({ data: { id } }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['orders'] })
+    },
+  })
+}
+
+export function useAssignDriver() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ id, driverId }: { id: string; driverId: string }) =>
+      assignDriver({ data: { id, driverId } }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['orders'] })
+    },
+  })
+}
+
 export function useUpdateOrderStatus() {
   const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: ({ id, status }: { id: string; status: Order['status'] }) =>
-      updateOrderStatus({ data: { id, status: status as 'pending' | 'confirmed' | 'delivered' } }),
+      updateOrderStatus({ data: { id, status: status as 'pending' | 'confirmed' | 'in-transit' | 'delivered' } }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['orders'] })
     },

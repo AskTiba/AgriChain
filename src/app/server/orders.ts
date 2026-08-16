@@ -5,7 +5,7 @@ import { orders } from '~/app/db/schema'
 import { desc, eq } from 'drizzle-orm'
 import { authMiddleware } from './auth-middleware'
 
-const OrderStatusSchema = z.enum(['pending', 'confirmed', 'delivered'])
+const OrderStatusSchema = z.enum(['pending', 'confirmed', 'in-transit', 'delivered'])
 
 export const fetchOrders = createServerFn({ method: 'GET' })
   .handler(async () => {
@@ -14,7 +14,7 @@ export const fetchOrders = createServerFn({ method: 'GET' })
   })
 
 export const fetchOrdersByBuyer = createServerFn({ method: 'GET' })
-  .validator(z.object({ buyerId: z.string() }))
+  .validator(z.object({ buyerId: z.string().uuid() }))
   .handler(async ({ data }) => {
     const db = getDb()
     return await db
@@ -71,6 +71,41 @@ export const addOrder = createServerFn({ method: 'POST' })
       })
       .returning()
     return newOrder
+  })
+
+export const confirmOrder = createServerFn({ method: 'POST' })
+  .validator(z.object({ id: z.string().uuid() }))
+  .middleware([authMiddleware])
+  .handler(async ({ data, context }) => {
+    const db = getDb()
+    const [updated] = await db
+      .update(orders)
+      .set({
+        status: 'confirmed',
+        confirmedBy: context.session.userId,
+        updatedAt: new Date(),
+      })
+      .where(eq(orders.id, data.id))
+      .returning()
+    if (!updated) throw new Error('Order not found')
+    return updated
+  })
+
+export const assignDriver = createServerFn({ method: 'POST' })
+  .validator(z.object({ id: z.string().uuid(), driverId: z.string().uuid() }))
+  .middleware([authMiddleware])
+  .handler(async ({ data }) => {
+    const db = getDb()
+    const [updated] = await db
+      .update(orders)
+      .set({
+        assignedDriverId: data.driverId,
+        updatedAt: new Date(),
+      })
+      .where(eq(orders.id, data.id))
+      .returning()
+    if (!updated) throw new Error('Order not found')
+    return updated
   })
 
 export const updateOrderStatus = createServerFn({ method: 'POST' })
