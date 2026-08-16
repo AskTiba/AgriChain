@@ -1,55 +1,144 @@
 # Agri-Tech Cooperative & Supply Chain Tracker
 
-## Project Overview
-A commercial-grade agricultural logistics and supply chain coordination platform designed specifically for regional smallholder farming cooperatives and local distributors. This platform streamlines harvest logging, vehicle transport capacity mapping, and warehouse allocation.
+A commercial-grade agricultural logistics and supply chain coordination platform for regional smallholder farming cooperatives and local distributors.
 
-## Architecture & Tech Stack
-- **Framework:** [TanStack Start](https://tanstack.com/start/latest) (Full-stack React with SSR, streaming, and Server Functions)
-- **Routing:** [TanStack Router](https://tanstack.com/router/latest) (Type-safe nested routing, search parameter validation, prefetching)
-- **State & Data:** [TanStack Query](https://tanstack.com/query/latest) (Asynchronous state sync, offline caching, optimistic updates)
-- **Forms:** [TanStack Form](https://tanstack.com/form/latest) (Type-safe, field-level subscription rendering)
-- **Styling:** Tailwind CSS v4 + CSS custom properties (design tokens)
-- **Database:** PostgreSQL + [Drizzle ORM](https://orm.drizzle.team) (zero-overhead, type-safe SQL)
-- **Package Manager:** pnpm
-- **Build:** Vite + Vinxi
+## Tech Stack
 
----
+| Layer | Technology |
+|-------|-----------|
+| Framework | [TanStack Start](https://tanstack.com/start) (SSR + Server Functions) |
+| Routing | [TanStack Router](https://tanstack.com/router) (file-based, type-safe) |
+| State | [TanStack Query](https://tanstack.com/query) (async state, offline caching) |
+| Forms | [TanStack Form](https://tanstack.com/form) (field-level subscriptions) |
+| Styling | Tailwind CSS v4 + CSS custom properties (design tokens) |
+| Testing | Vitest + React Testing Library |
+| Linting | ESLint (flat config) |
+| Package Manager | pnpm |
+| Build | Vite + Vinxi |
 
-## High-Performance TanStack Integration Points
+## Getting Started
 
-### 1. Offline-First Synchronization (TanStack Query)
-- **The Challenge:** Farmers logging data from remote fields face unstable cellular coverage.
-- **The Solution:** 
-  - Utilize `PersistQueryClient` to cache mutation requests in browser storage (`indexedDB` or `localStorage`).
-  - Implement **Optimistic Updates** on the harvest log list. When a farmer adds a new yield entry, the UI updates instantly with an "Uploading..." state.
-  - Configure automatic background retries with exponential backoff so that mutations execute seamlessly once the connection is restored.
+### Prerequisites
 
-### 2. Fast-Loading Dashboard & Map Views (TanStack Start & Router)
-- **The Challenge:** Interactive dashboards with logistics maps and heavy transport schedules can load slowly on lower-end devices.
-- **The Solution:**
-  - **SSR Hydration:** Use TanStack Start loader functions to fetch critical data (e.g., active distribution routes, warehouse capacities) on the server, ensuring an instantaneous first paint.
-  - **Prefetching:** Configure Router links to prefetch target route loaders on hover. By the time a distributor clicks "Assign Driver", the next screen's data is already cached.
+- Node.js 18+
+- pnpm
 
-### 3. Dynamic Crop Allocation Form (TanStack Form)
-- **The Challenge:** Co-op managers bulk-allocate complex harvests of varying weights, grades, and quality categories across multiple vehicles/warehouses.
-- **The Solution:**
-  - Utilize TanStack Form’s field-level subscription-based rendering. This ensures that typing a value in row #50 of a large dynamic grid doesn't trigger a re-render of the entire 100-row form.
-  - Implement server-side validation using Server Functions inside the form's `validators` to verify warehouse capacity thresholds before submission.
+### Installation
 
----
+```bash
+pnpm install
+```
 
-## Feature Roadmap
+### Development
 
-### Milestone 1: Multi-Tenant Tenant Configuration & Onboarding
-- [ ] Cooperative Profile setup (geographical location, main crop categories).
-- [ ] Role-Based Access Control (Admin, Co-op Manager, Driver, Buyer).
+```bash
+pnpm dev
+```
 
-### Milestone 2: Harvest Logging & Inventory Management
-- [ ] Real-time yield logging form (Crop type, quality grade, quantity, field ID).
-- [ ] Localized offline caching for remote field logging.
-- [ ] Warehouse space visualization with real-time capacity meters.
+Server runs at `http://localhost:3000`.
 
-### Milestone 3: Logistics & Transport Matchmaking
-- [ ] Dynamic vehicle ledger (truck payload, active driver, target destination).
-- [ ] Drag-and-drop shipment assignment linking harvests to transport vehicles.
-- [ ] Shareable logistics manifest links using serialized URL search parameters.
+### Commands
+
+| Command | Description |
+|---------|-------------|
+| `pnpm dev` | Start development server |
+| `pnpm build` | Production build |
+| `pnpm typecheck` | TypeScript check |
+| `pnpm lint` | ESLint check |
+| `pnpm vitest run` | Run tests |
+
+## Features
+
+### Multi-Tenant Onboarding
+- Cooperative profile setup (name, region, crop categories)
+- Role-based access: Admin, Co-op Manager, Driver, Buyer
+- 3-step wizard with validation
+
+### Harvest Logging
+- Real-time yield logging (crop type, quality grade, quantity, field ID)
+- Harvest list with table display and empty states
+- Grade A/B/C quality classification
+
+### Warehouse & Inventory
+- Warehouse capacity visualization with animated progress bars
+- Color-coded status (low / medium / high capacity)
+
+### Logistics & Transport
+- Vehicle ledger with add form (payload, driver, destination)
+- Shipment assignment (harvest-to-vehicle mapping)
+- Shareable logistics manifests via base64-encoded URLs
+
+### Buyer Portal
+- Browse available harvests in card grid
+- Place orders with quantity selection
+- Order status tracking (pending → confirmed → delivered)
+
+### Order Management
+- Order list with status badges and action buttons
+- Order detail view with harvest info and shipment link
+- Order number slugs (`ORD-000001`) for clean URLs
+
+### Offline Support
+- TanStack Query PersistQueryClient for localStorage caching
+- Seed data auto-restored on first visit
+- Seed versioning to force refresh stale data
+
+### Theme System
+- Light, dark, and system modes
+- Three-mode toggle with localStorage persistence
+- WCAG AA contrast (≥ 4.5:1) in both modes
+
+## Project Structure
+
+```
+src/
+├── app/
+│   ├── hooks/          # TanStack Query hooks (useHarvests, useOrders)
+│   └── lib/            # API layer, seed data, utilities
+├── components/
+│   ├── ui/             # Reusable primitives (Input, Select, Button)
+│   └── *.tsx           # Feature components (Wizard, WarehouseCapacity, etc.)
+├── routes/
+│   ├── __root.tsx      # Root layout (nav, theme, footer)
+│   ├── index.tsx       # Dashboard
+│   ├── harvest.tsx     # Harvest logging
+│   ├── logistics.tsx   # Logistics & transport
+│   ├── buyer.tsx       # Buyer portal
+│   ├── onboarding.tsx  # Onboarding wizard
+│   ├── manifest.tsx    # Public manifest view
+│   └── orders/         # Order list + detail
+├── styles/
+│   └── app.css         # Design tokens, global styles
+└── test/
+    ├── setup.ts        # Test configuration
+    └── test-utils.tsx  # Shared renderWithProviders
+```
+
+## Design System
+
+- **Palette:** Agrarian Greens + Warm Neutrals (growth, trust, groundedness)
+- **Tokens:** CSS custom properties (`--color-primary`, `--color-surface`, etc.)
+- **Typography:** Fluid scale via `clamp()` (20-28px headings, 16px body)
+- **Touch targets:** ≥ 44px (WCAG 2.5.8)
+- **Accessibility:** Skip links, ARIA labels, `prefers-reduced-motion`, keyboard navigation
+
+## Testing
+
+108 tests across 22 test files covering:
+- Component rendering and interaction
+- Form validation and submission
+- Integration tests for all core user journeys (buyer flow, order management, logistics)
+- API layer (localStorage persistence)
+- Data serialization (manifest encode/decode)
+
+## Roadmap
+
+- [x] Milestone 1: Multi-Tenant Configuration & Onboarding (13 pts)
+- [x] Milestone 2: Harvest Logging & Inventory Management (13 pts)
+- [x] Milestone 3: Logistics & Transport Matchmaking (13 pts)
+- [x] Milestone 4: Buyer Portal & Order Management (8 pts)
+- [x] Sprint 6: Tech Debt & QA Polish (7 pts)
+- [x] Sprint 7: Integration Test Coverage (5 pts)
+- [x] Sprint 8: Performance Optimization (3 pts)
+- [ ] Route code splitting (createLazyFileRoute — deferred)
+- [ ] Database scaffold (PostgreSQL + Drizzle ORM)
