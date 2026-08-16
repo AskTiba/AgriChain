@@ -1,11 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { fetchOrders, fetchOrdersByBuyer, fetchOrderByOrderNumber, addOrder, updateOrderStatus, deleteOrder, Order } from '~/app/lib/order-api'
+import { sampleOrders } from '~/app/lib/seed-data'
 
-const defaultOrders: Order[] = [
-  { id: '550e8400-e29b-41d4-a716-446655440001', orderNumber: 'ORD-000001', harvestId: 'h1', buyerId: 'buyer-001', quantity: 100, status: 'pending', createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(), updatedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString() },
-  { id: '550e8400-e29b-41d4-a716-446655440002', orderNumber: 'ORD-000002', harvestId: 'h2', buyerId: 'buyer-001', quantity: 50, status: 'confirmed', createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(), updatedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString() },
-  { id: '550e8400-e29b-41d4-a716-446655440003', orderNumber: 'ORD-000003', harvestId: 'h3', buyerId: 'buyer-002', quantity: 75, status: 'delivered', createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(), updatedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString() },
-]
+const defaultOrders = sampleOrders
 
 function getInitialOrders(): Order[] {
   if (typeof window === 'undefined') return defaultOrders

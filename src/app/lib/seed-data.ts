@@ -4,7 +4,7 @@ import { Order } from './order-api'
 const HARVEST_STORAGE_KEY = 'agri-tech-harvests'
 const ORDER_STORAGE_KEY = 'agri-tech-orders'
 
-const sampleHarvests: HarvestEntry[] = [
+export const sampleHarvests: HarvestEntry[] = [
   {
     id: 'h1',
     cropType: 'Maize',
@@ -47,7 +47,7 @@ const sampleHarvests: HarvestEntry[] = [
   },
 ]
 
-const sampleOrders: Order[] = [
+export const sampleOrders: Order[] = [
   {
     id: '550e8400-e29b-41d4-a716-446655440001',
     orderNumber: 'ORD-000001',
