@@ -1,11 +1,25 @@
 import { createServerFn } from '@tanstack/react-start'
 import { z } from 'zod'
 import { getDb } from '~/app/db'
-import { orders } from '~/app/db/schema'
-import { desc, eq } from 'drizzle-orm'
+import { orders, notifications, users } from '~/app/db/schema'
+import { desc, eq, or } from 'drizzle-orm'
 import { authMiddleware } from './auth-middleware'
 
 const OrderStatusSchema = z.enum(['pending', 'confirmed', 'in-transit', 'delivered'])
+
+async function notifyUser(db: ReturnType<typeof getDb>, userId: string, type: 'order_placed' | 'order_confirmed' | 'driver_assigned' | 'status_changed', message: string, orderId?: string) {
+  await db.insert(notifications).values({ userId, type, message, orderId })
+}
+
+async function notifyManagers(db: ReturnType<typeof getDb>, message: string, orderId?: string) {
+  const managers = await db
+    .select({ id: users.id })
+    .from(users)
+    .where(or(eq(users.role, 'manager'), eq(users.role, 'admin')))
+  for (const m of managers) {
+    await notifyUser(db, m.id, 'order_placed', message, orderId)
+  }
+}
 
 export const fetchOrders = createServerFn({ method: 'GET' })
   .handler(async () => {
@@ -70,6 +84,9 @@ export const addOrder = createServerFn({ method: 'POST' })
         orderNumber,
       })
       .returning()
+
+    await notifyManagers(db, `New order ${orderNumber} placed for ${data.quantity}kg`, newOrder.id)
+
     return newOrder
   })
 
@@ -88,6 +105,9 @@ export const confirmOrder = createServerFn({ method: 'POST' })
       .where(eq(orders.id, data.id))
       .returning()
     if (!updated) throw new Error('Order not found')
+
+    await notifyUser(db, updated.buyerId, 'order_confirmed', `Order ${updated.orderNumber} has been confirmed`, updated.id)
+
     return updated
   })
 
@@ -105,6 +125,10 @@ export const assignDriver = createServerFn({ method: 'POST' })
       .where(eq(orders.id, data.id))
       .returning()
     if (!updated) throw new Error('Order not found')
+
+    await notifyUser(db, updated.buyerId, 'driver_assigned', `A driver has been assigned to order ${updated.orderNumber}`, updated.id)
+    await notifyUser(db, data.driverId, 'driver_assigned', `You have been assigned to order ${updated.orderNumber}`, updated.id)
+
     return updated
   })
 
@@ -119,6 +143,10 @@ export const updateOrderStatus = createServerFn({ method: 'POST' })
       .where(eq(orders.id, data.id))
       .returning()
     if (!updated) throw new Error('Order not found')
+
+    const statusLabel = data.status === 'in-transit' ? 'in transit' : data.status
+    await notifyUser(db, updated.buyerId, 'status_changed', `Order ${updated.orderNumber} is now ${statusLabel}`, updated.id)
+
     return updated
   })
 

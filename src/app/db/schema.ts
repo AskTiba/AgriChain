@@ -1,4 +1,4 @@
-import { pgTable, uuid, text, integer, timestamp, varchar } from 'drizzle-orm/pg-core'
+import { pgTable, uuid, text, integer, boolean, timestamp, varchar } from 'drizzle-orm/pg-core'
 
 export const harvestEntries = pgTable('harvest_entries', {
   id: uuid('id').primaryKey().defaultRandom(),
@@ -75,8 +75,20 @@ export const sessions = pgTable('sessions', {
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 })
 
+export const notifications = pgTable('notifications', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').references(() => users.id).notNull(),
+  type: text('type', { enum: ['order_placed', 'order_confirmed', 'driver_assigned', 'status_changed'] }).notNull(),
+  message: text('message').notNull(),
+  orderId: uuid('order_id').references(() => orders.id),
+  read: boolean('read').notNull().default(false),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+})
+
 export type User = typeof users.$inferSelect
 export type NewUser = typeof users.$inferInsert
 export type SafeUser = Omit<User, 'passwordHash' | 'createdAt'>
 export type Session = typeof sessions.$inferSelect
 export type NewSession = typeof sessions.$inferInsert
+export type Notification = typeof notifications.$inferSelect
+export type NewNotification = typeof notifications.$inferInsert
