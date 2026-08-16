@@ -31,3 +31,8 @@ pnpm-debug.log*
 
 # typescript
 *.tsbuildinfo
+
+# AI agent tooling (not part of the product)
+.opencode/
+.devpartner/
+AGENTS.md
