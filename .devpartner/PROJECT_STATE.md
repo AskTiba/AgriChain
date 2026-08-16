@@ -8,7 +8,7 @@
 - Role selector with 4 options (Admin, Co-op Manager, Driver, Buyer)
 - Harvest log form with crop type, quality grade, quantity, field ID
 - Harvest log list with table display and empty state
-- Warehouse capacity visualization with animated meters and color-coded status
+- Warehouse capacity visualization with animated meters and color-coded status (DB-backed)
 - Vehicle ledger with table and add vehicle form (DB-backed)
 - Shipment assignment with inline per-harvest assignment flow (DB-backed)
 - Shareable logistics manifests with base64 URL encoding and read-only view
@@ -20,9 +20,10 @@
 - Order IDs use `orderNumber` slug (`ORD-000001`) for URLs and display
 - Order detail view with harvest info, status badges, and shipment link
 - Responsive navbar with mobile hamburger menu, desktop horizontal links
-- PostgreSQL via Neon (Frankfurt `eu-central-1`), Drizzle ORM
-- Database schema: harvestEntries, orders, vehicles (fleet assets), assignments (trip records)
+- PostgreSQL via Supabase (pg TCP driver), Drizzle ORM
+- Database schema: harvestEntries, orders, vehicles, assignments, users, sessions, notifications, cooperatives, warehouses
 - Server functions for all CRUD via TanStack `createServerFn` with Zod validation
+- Auth resilience: `getCurrentUser` falls back to session data on DB failure
 - Hooks with SSR guards (`enabled: typeof window !== 'undefined'`)
 - ESLint flat config (`eslint.config.mjs`)
 - Git repo initialized

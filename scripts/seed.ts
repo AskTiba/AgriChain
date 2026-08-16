@@ -2,7 +2,7 @@ import 'dotenv/config'
 import { getDb } from '../src/app/db'
 import {
   harvestEntries, orders, users, cooperatives,
-  vehicles, assignments, notifications,
+  vehicles, assignments, notifications, warehouses,
 } from '../src/app/db/schema'
 import { eq } from 'drizzle-orm'
 import bcrypt from 'bcryptjs'
@@ -24,6 +24,7 @@ async function seed() {
   await db.delete(assignments)
   await db.delete(orders)
   await db.delete(harvestEntries)
+  await db.delete(warehouses)
   await db.delete(users)
   await db.delete(vehicles)
   await db.delete(cooperatives)
@@ -56,16 +57,23 @@ async function seed() {
   await db.update(cooperatives).set({ createdBy: manager1.id }).where(eq(cooperatives.id, greenValley.id))
   await db.update(cooperatives).set({ createdBy: admin.id }).where(eq(cooperatives.id, easternHighlands.id))
 
+  // ── Warehouses ──
+  const [warehouse1, warehouse2] = await db.insert(warehouses).values([
+    { name: 'Green Valley Cold Store', location: 'Western Province Hub', totalCapacityKg: 2000, cooperativeId: greenValley.id },
+    { name: 'Highland Distribution Center', location: 'Eastern Province Depot', totalCapacityKg: 3000, cooperativeId: easternHighlands.id },
+  ]).returning()
+  console.log('  ✓ 2 warehouses')
+
   // ── Harvest Entries ──
   const harvests = await db.insert(harvestEntries).values([
-    { cropType: 'Maize', qualityGrade: 'A', quantity: 500, fieldId: 'FIELD-001', createdBy: manager1.id },
-    { cropType: 'Beans', qualityGrade: 'B', quantity: 200, fieldId: 'FIELD-002', createdBy: manager1.id },
-    { cropType: 'Tomatoes', qualityGrade: 'A', quantity: 150, fieldId: 'FIELD-003', createdBy: manager2.id },
-    { cropType: 'Cabbage', qualityGrade: 'C', quantity: 300, fieldId: 'FIELD-004', createdBy: manager2.id },
-    { cropType: 'Potatoes', qualityGrade: 'A', quantity: 400, fieldId: 'FIELD-005', createdBy: manager1.id },
-    { cropType: 'Coffee', qualityGrade: 'A', quantity: 100, fieldId: 'FIELD-006', createdBy: manager2.id },
-    { cropType: 'Tea', qualityGrade: 'B', quantity: 250, fieldId: 'FIELD-007', createdBy: manager1.id },
-    { cropType: 'Avocados', qualityGrade: 'A', quantity: 180, fieldId: 'FIELD-008', createdBy: manager2.id },
+    { cropType: 'Maize', qualityGrade: 'A', quantity: 500, fieldId: 'FIELD-001', createdBy: manager1.id, warehouseId: warehouse1.id },
+    { cropType: 'Beans', qualityGrade: 'B', quantity: 200, fieldId: 'FIELD-002', createdBy: manager1.id, warehouseId: warehouse1.id },
+    { cropType: 'Tomatoes', qualityGrade: 'A', quantity: 150, fieldId: 'FIELD-003', createdBy: manager2.id, warehouseId: warehouse2.id },
+    { cropType: 'Cabbage', qualityGrade: 'C', quantity: 300, fieldId: 'FIELD-004', createdBy: manager2.id, warehouseId: warehouse2.id },
+    { cropType: 'Potatoes', qualityGrade: 'A', quantity: 400, fieldId: 'FIELD-005', createdBy: manager1.id, warehouseId: warehouse1.id },
+    { cropType: 'Coffee', qualityGrade: 'A', quantity: 100, fieldId: 'FIELD-006', createdBy: manager2.id, warehouseId: null },
+    { cropType: 'Tea', qualityGrade: 'B', quantity: 250, fieldId: 'FIELD-007', createdBy: manager1.id, warehouseId: null },
+    { cropType: 'Avocados', qualityGrade: 'A', quantity: 180, fieldId: 'FIELD-008', createdBy: manager2.id, warehouseId: warehouse2.id },
   ]).returning()
   console.log('  ✓ 8 harvest entries (various crops, grades, quantities)')
 

@@ -32,6 +32,16 @@
 
 ---
 
+## Sprint 13 — Auth Resilience & Warehouse
+
+### 2026-08-17: getCurrentUser silently returns null on DB failure
+- **Symptom:** User gets redirected to login after server restart even with valid session cookie
+- **Root cause:** `getCurrentUser` catches all DB errors and returns `null`, indistinguishable from "not logged in"
+- **Fix:** Extracted `resolveCurrentUser` helper that falls back to session data when DB query fails (`src/app/server/auth-resilience.ts`)
+- **Lesson:** Session cookies are the source of truth for auth state; DB lookup is enrichment, not validation
+
+---
+
 ## General
 
 ### 2026-08-15: SSR hydration mismatch on dark mode

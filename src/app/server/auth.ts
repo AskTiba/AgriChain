@@ -5,6 +5,7 @@ import { getDb } from '~/app/db'
 import { users, sessions } from '~/app/db/schema'
 import { eq } from 'drizzle-orm'
 import { useAppSession } from './session'
+import { resolveCurrentUser } from './auth-resilience'
 
 const SALT_ROUNDS = 12
 
@@ -113,26 +114,6 @@ export const logout = createServerFn({ method: 'POST' })
 
 export const getCurrentUser = createServerFn({ method: 'GET' })
   .handler(async () => {
-    try {
-      const session = await useAppSession()
-      const data = session.data
-
-      if (!data.userId) {
-        return null
-      }
-
-      const db = getDb()
-      const [user] = await db.select({
-        id: users.id,
-        email: users.email,
-        name: users.name,
-        role: users.role,
-        cooperativeId: users.cooperativeId,
-      }).from(users).where(eq(users.id, data.userId)).limit(1)
-
-      return user || null
-    } catch (e) {
-      console.error('[AUTH] getCurrentUser error:', (e as Error).message)
-      return null
-    }
+    const session = await useAppSession()
+    return resolveCurrentUser(session.data)
   })

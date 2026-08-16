@@ -1,5 +1,14 @@
 import { pgTable, uuid, text, integer, boolean, timestamp, varchar } from 'drizzle-orm/pg-core'
 
+export const warehouses = pgTable('warehouses', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  name: text('name').notNull(),
+  location: text('location').notNull(),
+  totalCapacityKg: integer('total_capacity_kg').notNull(),
+  cooperativeId: uuid('cooperative_id').references(() => cooperatives.id),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+})
+
 export const harvestEntries = pgTable('harvest_entries', {
   id: uuid('id').primaryKey().defaultRandom(),
   cropType: text('crop_type').notNull(),
@@ -7,6 +16,7 @@ export const harvestEntries = pgTable('harvest_entries', {
   quantity: integer('quantity').notNull(),
   fieldId: text('field_id').notNull(),
   createdBy: uuid('created_by').references(() => users.id),
+  warehouseId: uuid('warehouse_id').references(() => warehouses.id),
   timestamp: timestamp('timestamp', { withTimezone: true }).notNull().defaultNow(),
 })
 
@@ -102,3 +112,5 @@ export type Notification = typeof notifications.$inferSelect
 export type NewNotification = typeof notifications.$inferInsert
 export type Cooperative = typeof cooperatives.$inferSelect
 export type NewCooperative = typeof cooperatives.$inferInsert
+export type Warehouse = typeof warehouses.$inferSelect
+export type NewWarehouse = typeof warehouses.$inferInsert

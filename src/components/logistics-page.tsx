@@ -6,11 +6,13 @@ import { ShareableManifest, type ManifestEntry } from './shareable-manifest'
 import { useHarvests } from '~/app/hooks/use-harvests'
 import { useVehicles, useAddVehicle } from '~/app/hooks/use-vehicles'
 import { useAssignments, useAddAssignment } from '~/app/hooks/use-assignments'
+import { useWarehouses } from '~/app/hooks/use-warehouses'
 
 export function LogisticsPage() {
   const { data: dbHarvests = [] } = useHarvests()
   const { data: dbVehicles = [] } = useVehicles()
   const { data: dbAssignments = [] } = useAssignments()
+  const { data: dbWarehouses = [] } = useWarehouses()
   const addVehicle = useAddVehicle()
   const addAssignment = useAddAssignment()
   const [copied, setCopied] = useState(false)
@@ -36,6 +38,13 @@ export function LogisticsPage() {
     vehicleId: a.vehicleId ?? '',
     driverName: a.driverName,
     destination: a.destination,
+  }))
+
+  const warehouses = dbWarehouses.map((w) => ({
+    id: w.id,
+    name: w.name,
+    used: Number(w.used),
+    total: w.totalCapacityKg,
   }))
 
   const handleAddVehicle = (newVehicle: {
@@ -83,7 +92,7 @@ export function LogisticsPage() {
         <h2 className="mb-6 font-semibold text-[var(--color-text)]" style={{ fontSize: 'clamp(1.125rem, 1.5vw + 0.5rem, 1.5rem)' }}>
           Warehouse Capacity
         </h2>
-        <WarehouseCapacity warehouses={[]} />
+        <WarehouseCapacity warehouses={warehouses} />
       </section>
 
       <section aria-label="Vehicle ledger" className="mb-12">
