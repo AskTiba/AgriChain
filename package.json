@@ -1,5 +1,8 @@
 {
-  "name": "agri-tech-coop",
+  "name": "agrichain",
+  "version": "0.1.0",
+  "description": "Agricultural logistics and supply chain coordination platform for cooperatives",
+  "license": "Apache-2.0",
   "private": true,
   "sideEffects": false,
   "type": "module",
