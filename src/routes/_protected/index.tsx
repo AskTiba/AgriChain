@@ -2,7 +2,7 @@ import { createFileRoute, Link } from '@tanstack/react-router'
 import { useHarvests } from '~/app/hooks/use-harvests'
 import { useOrders } from '~/app/hooks/use-orders'
 
-export const Route = createFileRoute('/')({
+export const Route = createFileRoute('/_protected/')({
   component: Home,
 })
 
