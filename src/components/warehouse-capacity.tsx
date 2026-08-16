@@ -57,7 +57,7 @@ export function WarehouseCapacity({ warehouses }: WarehouseCapacityProps) {
             >
               <div
                 data-status={status}
-                className={`h-full rounded-full transition-all duration-500 ease-out ${STATUS_COLORS[status]}`}
+                className={`h-full rounded-full transition-[width] duration-500 ease-out ${STATUS_COLORS[status]}`}
                 style={{ width: `${percentage}%` }}
               />
             </div>

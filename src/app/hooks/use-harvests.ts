@@ -27,7 +27,6 @@ export function useHarvests() {
     queryKey: HARVESTS_QUERY_KEY,
     queryFn: fetchHarvests,
     initialData: getInitialHarvests,
-    staleTime: 0,
     gcTime: 1000 * 60 * 60 * 24,
   })
 }
