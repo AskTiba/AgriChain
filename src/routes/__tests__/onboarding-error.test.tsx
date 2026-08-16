@@ -1,13 +1,13 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { Onboarding } from '../onboarding'
+import { OnboardingPage } from '../../components/onboarding-page'
 
 describe('Onboarding Error States', () => {
   it('shows error message when submission fails', async () => {
     const user = userEvent.setup()
     const onSubmit = vi.fn().mockRejectedValue(new Error('Network error'))
-    render(<Onboarding onSubmit={onSubmit} />)
+    render(<OnboardingPage onSubmit={onSubmit} />)
 
     await user.type(screen.getByLabelText(/cooperative name/i), 'Green Valley Farmers')
     await user.type(screen.getByLabelText(/region/i), 'Western Province')
@@ -22,7 +22,7 @@ describe('Onboarding Error States', () => {
   it('preserves form values after error', async () => {
     const user = userEvent.setup()
     const onSubmit = vi.fn().mockRejectedValue(new Error('Network error'))
-    render(<Onboarding onSubmit={onSubmit} />)
+    render(<OnboardingPage onSubmit={onSubmit} />)
 
     const nameInput = screen.getByLabelText(/cooperative name/i)
     const regionInput = screen.getByLabelText(/region/i)
@@ -43,7 +43,7 @@ describe('Onboarding Error States', () => {
     const onSubmit = vi.fn()
       .mockRejectedValueOnce(new Error('Network error'))
       .mockResolvedValueOnce(undefined)
-    render(<Onboarding onSubmit={onSubmit} />)
+    render(<OnboardingPage onSubmit={onSubmit} />)
 
     await user.type(screen.getByLabelText(/cooperative name/i), 'Green Valley Farmers')
     await user.type(screen.getByLabelText(/region/i), 'Western Province')

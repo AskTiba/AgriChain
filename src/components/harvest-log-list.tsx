@@ -4,7 +4,7 @@ interface HarvestEntry {
   qualityGrade: string
   quantity: number
   fieldId: string
-  timestamp: string
+  timestamp: string | Date
 }
 
 interface HarvestLogListProps {
@@ -17,7 +17,7 @@ const QUALITY_LABELS: Record<string, string> = {
   C: 'Grade C',
 }
 
-function formatDate(iso: string): string {
+function formatDate(iso: string | Date): string {
   return new Date(iso).toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',

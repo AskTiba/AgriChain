@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { renderWithProviders } from '../../test/test-utils'
-import { Logistics } from '../logistics'
+import { LogisticsPage } from '../../components/logistics-page'
 
 describe('Logistics Flow Integration', () => {
   beforeEach(() => {
@@ -10,7 +10,7 @@ describe('Logistics Flow Integration', () => {
   })
 
   it('renders all logistics sections', () => {
-    renderWithProviders(<Logistics />)
+    renderWithProviders(<LogisticsPage />)
 
     expect(screen.getByText('Warehouse A')).toBeInTheDocument()
     expect(screen.getAllByText('Truck A').length).toBeGreaterThan(0)
@@ -18,7 +18,7 @@ describe('Logistics Flow Integration', () => {
   })
 
   it('renders initial vehicles in ledger', () => {
-    renderWithProviders(<Logistics />)
+    renderWithProviders(<LogisticsPage />)
 
     expect(screen.getAllByText('Truck A').length).toBeGreaterThan(0)
     expect(screen.getAllByText('Truck B').length).toBeGreaterThan(0)
@@ -27,7 +27,7 @@ describe('Logistics Flow Integration', () => {
   })
 
   it('shows all unassigned harvests', () => {
-    renderWithProviders(<Logistics />)
+    renderWithProviders(<LogisticsPage />)
 
     expect(screen.getByText('Tomatoes')).toBeInTheDocument()
     expect(screen.getByText('Maize')).toBeInTheDocument()
@@ -37,7 +37,7 @@ describe('Logistics Flow Integration', () => {
 
   it('assigns harvest to vehicle and generates manifest', async () => {
     const user = userEvent.setup()
-    renderWithProviders(<Logistics />)
+    renderWithProviders(<LogisticsPage />)
 
     const assignButtons = screen.getAllByRole('button', { name: /truck a/i })
     await user.click(assignButtons[0])
@@ -47,7 +47,7 @@ describe('Logistics Flow Integration', () => {
   })
 
   it('shows no manifest before any assignment', () => {
-    renderWithProviders(<Logistics />)
+    renderWithProviders(<LogisticsPage />)
 
     expect(screen.queryByText('Share Manifest')).not.toBeInTheDocument()
     expect(screen.queryByText('Copy Manifest Link')).not.toBeInTheDocument()

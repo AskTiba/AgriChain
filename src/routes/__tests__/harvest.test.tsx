@@ -1,7 +1,7 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { Harvest } from '../harvest'
+import { HarvestPage } from '../../components/harvest-page'
 
 function createTestQueryClient() {
   return new QueryClient({
@@ -22,14 +22,20 @@ function renderWithQueryClient(ui: React.ReactElement) {
   )
 }
 
+vi.mock('~/app/server/harvests', () => ({
+  fetchHarvests: vi.fn().mockResolvedValue([]),
+  addHarvest: vi.fn().mockResolvedValue({}),
+  deleteHarvest: vi.fn().mockResolvedValue(undefined),
+}))
+
 describe('Harvest Log Form', () => {
   it('renders the harvest page heading', () => {
-    renderWithQueryClient(<Harvest />)
+    renderWithQueryClient(<HarvestPage />)
     expect(screen.getByRole('heading', { name: /harvest logging/i })).toBeInTheDocument()
   })
 
   it('renders all form fields', () => {
-    renderWithQueryClient(<Harvest />)
+    renderWithQueryClient(<HarvestPage />)
     expect(screen.getByLabelText(/crop type/i)).toBeInTheDocument()
     expect(screen.getByLabelText(/quality grade/i)).toBeInTheDocument()
     expect(screen.getByLabelText(/quantity/i)).toBeInTheDocument()
@@ -37,12 +43,12 @@ describe('Harvest Log Form', () => {
   })
 
   it('renders the submit button', () => {
-    renderWithQueryClient(<Harvest />)
+    renderWithQueryClient(<HarvestPage />)
     expect(screen.getByRole('button', { name: /log harvest/i })).toBeInTheDocument()
   })
 
   it('has correct default values for select fields', () => {
-    renderWithQueryClient(<Harvest />)
+    renderWithQueryClient(<HarvestPage />)
     expect(screen.getByLabelText(/crop type/i)).toHaveValue('')
     expect(screen.getByLabelText(/quality grade/i)).toHaveValue('')
   })

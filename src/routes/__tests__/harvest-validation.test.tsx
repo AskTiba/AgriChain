@@ -1,8 +1,8 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { Harvest } from '../harvest'
+import { HarvestPage } from '../../components/harvest-page'
 
 function createTestQueryClient() {
   return new QueryClient({
@@ -23,10 +23,16 @@ function renderWithQueryClient(ui: React.ReactElement) {
   )
 }
 
+vi.mock('~/app/server/harvests', () => ({
+  fetchHarvests: vi.fn().mockResolvedValue([]),
+  addHarvest: vi.fn().mockResolvedValue({}),
+  deleteHarvest: vi.fn().mockResolvedValue(undefined),
+}))
+
 describe('Harvest Form Validation', () => {
   it('shows error when crop type is empty on submit', async () => {
     const user = userEvent.setup()
-    renderWithQueryClient(<Harvest />)
+    renderWithQueryClient(<HarvestPage />)
 
     await user.click(screen.getByRole('button', { name: /log harvest/i }))
 
@@ -36,7 +42,7 @@ describe('Harvest Form Validation', () => {
 
   it('shows error when quality grade is empty on submit', async () => {
     const user = userEvent.setup()
-    renderWithQueryClient(<Harvest />)
+    renderWithQueryClient(<HarvestPage />)
 
     await user.selectOptions(screen.getByLabelText(/crop type/i), 'maize')
     await user.click(screen.getByRole('button', { name: /log harvest/i }))
@@ -46,7 +52,7 @@ describe('Harvest Form Validation', () => {
 
   it('shows error when quantity is zero', async () => {
     const user = userEvent.setup()
-    renderWithQueryClient(<Harvest />)
+    renderWithQueryClient(<HarvestPage />)
 
     await user.selectOptions(screen.getByLabelText(/crop type/i), 'maize')
     await user.selectOptions(screen.getByLabelText(/quality grade/i), 'A')
@@ -57,7 +63,7 @@ describe('Harvest Form Validation', () => {
 
   it('shows error when field ID is empty', async () => {
     const user = userEvent.setup()
-    renderWithQueryClient(<Harvest />)
+    renderWithQueryClient(<HarvestPage />)
 
     await user.selectOptions(screen.getByLabelText(/crop type/i), 'maize')
     await user.selectOptions(screen.getByLabelText(/quality grade/i), 'A')
@@ -69,7 +75,7 @@ describe('Harvest Form Validation', () => {
 
   it('clears error when user selects a crop type', async () => {
     const user = userEvent.setup()
-    renderWithQueryClient(<Harvest />)
+    renderWithQueryClient(<HarvestPage />)
 
     await user.click(screen.getByRole('button', { name: /log harvest/i }))
     expect(screen.getByText(/crop type is required/i)).toBeInTheDocument()

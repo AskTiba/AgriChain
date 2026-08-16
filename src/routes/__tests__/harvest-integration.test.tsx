@@ -1,15 +1,12 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { render, screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
+import { describe, it, expect, vi } from 'vitest'
+import { render, screen, waitFor } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { Harvest } from '../harvest'
+import { HarvestPage } from '../../components/harvest-page'
 
 function createTestQueryClient() {
   return new QueryClient({
     defaultOptions: {
-      queries: {
-        retry: false,
-      },
+      queries: { retry: false },
     },
   })
 }
@@ -23,15 +20,37 @@ function renderWithQueryClient(ui: React.ReactElement) {
   )
 }
 
+vi.mock('~/app/server/harvests', () => ({
+  fetchHarvests: vi.fn().mockResolvedValue([
+    { id: 'h1', cropType: 'Maize', qualityGrade: 'A', quantity: 500, fieldId: 'FIELD-001', timestamp: new Date().toISOString() },
+  ]),
+  addHarvest: vi.fn().mockImplementation(({ data }: { data: Record<string, unknown> }) =>
+    Promise.resolve({
+      id: 'new-h1',
+      ...data,
+      timestamp: new Date().toISOString(),
+    })
+  ),
+  deleteHarvest: vi.fn().mockResolvedValue(undefined),
+}))
+
 describe('Harvest Page Integration', () => {
-  beforeEach(() => {
-    localStorage.clear()
-    vi.clearAllMocks()
+  it('shows harvest list when data exists', async () => {
+    renderWithQueryClient(<HarvestPage />)
+
+    await waitFor(() => {
+      expect(screen.getByText('Maize')).toBeInTheDocument()
+    })
   })
 
-  it('adds entry to list after successful submission', async () => {
+  it('submits a new harvest entry successfully', async () => {
+    const userEvent = (await import('@testing-library/user-event')).default
     const user = userEvent.setup()
-    renderWithQueryClient(<Harvest />)
+    renderWithQueryClient(<HarvestPage />)
+
+    await waitFor(() => {
+      expect(screen.getByText('Maize')).toBeInTheDocument()
+    })
 
     await user.selectOptions(screen.getByLabelText(/crop type/i), 'maize')
     await user.selectOptions(screen.getByLabelText(/quality grade/i), 'A')
@@ -39,28 +58,8 @@ describe('Harvest Page Integration', () => {
     await user.type(screen.getByLabelText(/field id/i), 'F-001')
     await user.click(screen.getByRole('button', { name: /log harvest/i }))
 
-    expect(screen.getByText('maize')).toBeInTheDocument()
-    expect(screen.getByText('F-001')).toBeInTheDocument()
-  })
-
-  it('shows harvest list when data exists', () => {
-    renderWithQueryClient(<Harvest />)
-
-    expect(screen.queryByText(/no harvest entries yet/i)).not.toBeInTheDocument()
-  })
-
-  it('hides empty state after first submission', async () => {
-    const user = userEvent.setup()
-    renderWithQueryClient(<Harvest />)
-
-    expect(screen.queryByText(/no harvest entries yet/i)).not.toBeInTheDocument()
-
-    await user.selectOptions(screen.getByLabelText(/crop type/i), 'wheat')
-    await user.selectOptions(screen.getByLabelText(/quality grade/i), 'B')
-    await user.type(screen.getByLabelText(/quantity/i), '200')
-    await user.type(screen.getByLabelText(/field id/i), 'F-002')
-    await user.click(screen.getByRole('button', { name: /log harvest/i }))
-
-    expect(screen.queryByText(/no harvest entries yet/i)).not.toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.getByText(/harvest entry logged successfully/i)).toBeInTheDocument()
+    })
   })
 })

@@ -1,33 +1,17 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { fetchHarvests, addHarvest, deleteHarvest } from '../lib/harvest-api'
-import type { HarvestEntry } from '../lib/harvest-api'
-import { sampleHarvests } from '../lib/seed-data'
+import {
+  fetchHarvests,
+  addHarvest,
+  deleteHarvest,
+} from '~/app/server/harvests'
+import type { HarvestEntry } from '~/app/db/schema'
 
-export const HARVESTS_QUERY_KEY = ['harvests']
-
-const defaultHarvests = sampleHarvests
-
-function getInitialHarvests(): HarvestEntry[] {
-  if (typeof window === 'undefined') return defaultHarvests
-  try {
-    const stored = localStorage.getItem('agri-tech-harvests')
-    if (stored) {
-      const parsed = JSON.parse(stored)
-      return parsed.length > 0 ? parsed : defaultHarvests
-    }
-    localStorage.setItem('agri-tech-harvests', JSON.stringify(defaultHarvests))
-    return defaultHarvests
-  } catch {
-    return defaultHarvests
-  }
-}
+export const HARVESTS_QUERY_KEY = ['harvests'] as const
 
 export function useHarvests() {
   return useQuery({
     queryKey: HARVESTS_QUERY_KEY,
-    queryFn: fetchHarvests,
-    initialData: getInitialHarvests,
-    gcTime: 1000 * 60 * 60 * 24,
+    queryFn: () => fetchHarvests(),
   })
 }
 
@@ -35,7 +19,12 @@ export function useAddHarvest() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: addHarvest,
+    mutationFn: (values: {
+      cropType: string
+      qualityGrade: string
+      quantity: number
+      fieldId: string
+    }) => addHarvest({ data: values }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: HARVESTS_QUERY_KEY })
     },
@@ -46,7 +35,7 @@ export function useDeleteHarvest() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: deleteHarvest,
+    mutationFn: (id: string) => deleteHarvest({ data: { id } }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: HARVESTS_QUERY_KEY })
     },

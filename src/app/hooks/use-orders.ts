@@ -1,66 +1,44 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { fetchOrders, fetchOrdersByBuyer, fetchOrderByOrderNumber, addOrder, updateOrderStatus, deleteOrder, Order } from '~/app/lib/order-api'
-import { sampleOrders } from '~/app/lib/seed-data'
-
-const defaultOrders = sampleOrders
-
-function getInitialOrders(): Order[] {
-  if (typeof window === 'undefined') return defaultOrders
-  try {
-    const stored = localStorage.getItem('agri-tech-orders')
-    if (stored) {
-      const parsed = JSON.parse(stored)
-      if (parsed.length > 0) {
-        const hasOldFormat = parsed.some((o: Order) => !o.orderNumber || o.id.match(/^[a-z]\d$/) || o.id.length < 10)
-        if (hasOldFormat) {
-          localStorage.setItem('agri-tech-orders', JSON.stringify(defaultOrders))
-          return defaultOrders
-        }
-        return parsed
-      }
-    }
-    localStorage.setItem('agri-tech-orders', JSON.stringify(defaultOrders))
-    return defaultOrders
-  } catch {
-    return defaultOrders
-  }
-}
+import {
+  fetchOrders,
+  fetchOrdersByBuyer,
+  fetchOrderByOrderNumber,
+  addOrder,
+  updateOrderStatus,
+  deleteOrder,
+} from '~/app/server/orders'
+import type { Order } from '~/app/db/schema'
 
 export function useOrders() {
   return useQuery({
     queryKey: ['orders'],
-    queryFn: fetchOrders,
-    initialData: getInitialOrders,
+    queryFn: () => fetchOrders(),
   })
 }
 
 export function useOrdersByBuyer(buyerId: string) {
   return useQuery({
     queryKey: ['orders', buyerId],
-    queryFn: () => fetchOrdersByBuyer(buyerId),
-    initialData: () => {
-      const orders = getInitialOrders()
-      return orders.filter((o) => o.buyerId === buyerId)
-    },
+    queryFn: () => fetchOrdersByBuyer({ data: { buyerId } }),
   })
 }
 
 export function useOrderByOrderNumber(orderNumber: string) {
   return useQuery({
     queryKey: ['orders', orderNumber],
-    queryFn: () => fetchOrderByOrderNumber(orderNumber),
-    initialData: () => {
-      const orders = getInitialOrders()
-      return orders.find((o) => o.orderNumber === orderNumber)
-    },
+    queryFn: () => fetchOrderByOrderNumber({ data: { orderNumber } }),
   })
 }
 
 export function useAddOrder() {
   const queryClient = useQueryClient()
-  
+
   return useMutation({
-    mutationFn: addOrder,
+    mutationFn: (values: {
+      harvestId: string
+      buyerId: string
+      quantity: number
+    }) => addOrder({ data: values }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['orders'] })
     },
@@ -69,10 +47,10 @@ export function useAddOrder() {
 
 export function useUpdateOrderStatus() {
   const queryClient = useQueryClient()
-  
+
   return useMutation({
     mutationFn: ({ id, status }: { id: string; status: Order['status'] }) =>
-      updateOrderStatus(id, status),
+      updateOrderStatus({ data: { id, status: status as 'pending' | 'confirmed' | 'delivered' } }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['orders'] })
     },
@@ -81,9 +59,9 @@ export function useUpdateOrderStatus() {
 
 export function useDeleteOrder() {
   const queryClient = useQueryClient()
-  
+
   return useMutation({
-    mutationFn: deleteOrder,
+    mutationFn: (id: string) => deleteOrder({ data: { id } }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['orders'] })
     },

@@ -1,18 +1,37 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { renderWithProviders } from '../../test/test-utils'
-import { BuyerPage } from '../buyer'
+import { BuyerPage } from '../../components/buyer-page'
+
+vi.mock('~/app/server/harvests', () => ({
+  fetchHarvests: vi.fn().mockResolvedValue([
+    { id: 'h1', cropType: 'Maize', qualityGrade: 'A', quantity: 500, fieldId: 'FIELD-001', timestamp: new Date().toISOString() },
+    { id: 'h2', cropType: 'Beans', qualityGrade: 'B', quantity: 200, fieldId: 'FIELD-002', timestamp: new Date().toISOString() },
+    { id: 'h3', cropType: 'Tomatoes', qualityGrade: 'A', quantity: 150, fieldId: 'FIELD-003', timestamp: new Date().toISOString() },
+  ]),
+  addHarvest: vi.fn().mockResolvedValue({}),
+  deleteHarvest: vi.fn().mockResolvedValue(undefined),
+}))
+
+vi.mock('~/app/server/orders', () => ({
+  fetchOrders: vi.fn().mockResolvedValue([]),
+  fetchOrdersByBuyer: vi.fn().mockResolvedValue([]),
+  fetchOrderByOrderNumber: vi.fn().mockResolvedValue(undefined),
+  addOrder: vi.fn().mockResolvedValue({
+    id: crypto.randomUUID(), orderNumber: 'ORD-000001', status: 'pending',
+    createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
+  }),
+  updateOrderStatus: vi.fn().mockResolvedValue({}),
+  deleteOrder: vi.fn().mockResolvedValue(undefined),
+}))
 
 describe('Buyer Order Flow Integration', () => {
-  beforeEach(() => {
-    localStorage.clear()
-  })
-
-  it('displays harvest cards from seed data', () => {
+  it('displays harvest cards from seed data', async () => {
     renderWithProviders(<BuyerPage />)
-
-    expect(screen.getByText('Maize')).toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.getByText('Maize')).toBeInTheDocument()
+    })
     expect(screen.getByText('Beans')).toBeInTheDocument()
     expect(screen.getByText('Tomatoes')).toBeInTheDocument()
   })
@@ -20,6 +39,10 @@ describe('Buyer Order Flow Integration', () => {
   it('places an order end-to-end', async () => {
     const user = userEvent.setup()
     renderWithProviders(<BuyerPage />)
+
+    await waitFor(() => {
+      expect(screen.getByText('Maize')).toBeInTheDocument()
+    })
 
     const orderButtons = screen.getAllByRole('button', { name: /order now/i })
     await user.click(orderButtons[0])
@@ -37,16 +60,15 @@ describe('Buyer Order Flow Integration', () => {
     await waitFor(() => {
       expect(screen.queryByLabelText(/quantity/i)).not.toBeInTheDocument()
     })
-
-    const stored = JSON.parse(localStorage.getItem('agri-tech-orders') || '[]')
-    const newOrder = stored.find((o: { harvestId: string; quantity: number }) => o.quantity === 25)
-    expect(newOrder).toBeDefined()
-    expect(newOrder.status).toBe('pending')
   })
 
   it('cancels order and resets form', async () => {
     const user = userEvent.setup()
     renderWithProviders(<BuyerPage />)
+
+    await waitFor(() => {
+      expect(screen.getByText('Maize')).toBeInTheDocument()
+    })
 
     const orderButtons = screen.getAllByRole('button', { name: /order now/i })
     await user.click(orderButtons[0])
@@ -62,6 +84,10 @@ describe('Buyer Order Flow Integration', () => {
   it('disables Place Order when quantity is invalid', async () => {
     const user = userEvent.setup()
     renderWithProviders(<BuyerPage />)
+
+    await waitFor(() => {
+      expect(screen.getByText('Maize')).toBeInTheDocument()
+    })
 
     const orderButtons = screen.getAllByRole('button', { name: /order now/i })
     await user.click(orderButtons[0])

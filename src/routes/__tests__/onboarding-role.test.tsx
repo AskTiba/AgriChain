@@ -1,12 +1,12 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { Onboarding } from '../onboarding'
+import { OnboardingPage } from '../../components/onboarding-page'
 
 describe('Onboarding Role Integration', () => {
   it('renders the role selector in step 2', async () => {
     const user = userEvent.setup()
-    render(<Onboarding />)
+    render(<OnboardingPage />)
 
     await user.type(screen.getByLabelText(/cooperative name/i), 'Green Valley')
     await user.type(screen.getByLabelText(/region/i), 'Western')
@@ -18,7 +18,7 @@ describe('Onboarding Role Integration', () => {
 
   it('shows error when role is not selected on navigation', async () => {
     const user = userEvent.setup()
-    render(<Onboarding />)
+    render(<OnboardingPage />)
 
     await user.type(screen.getByLabelText(/cooperative name/i), 'Green Valley')
     await user.type(screen.getByLabelText(/region/i), 'Western')
@@ -31,7 +31,7 @@ describe('Onboarding Role Integration', () => {
   it('submits successfully when all fields including role are filled', async () => {
     const user = userEvent.setup()
     const handleSubmit = vi.fn()
-    render(<Onboarding onSubmit={handleSubmit} />)
+    render(<OnboardingPage onSubmit={handleSubmit} />)
 
     await user.type(screen.getByLabelText(/cooperative name/i), 'Green Valley')
     await user.type(screen.getByLabelText(/region/i), 'Western')

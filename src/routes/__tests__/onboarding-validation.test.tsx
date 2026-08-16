@@ -1,12 +1,12 @@
 import { describe, it, expect } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { Onboarding } from '../onboarding'
+import { OnboardingPage } from '../../components/onboarding-page'
 
 describe('Onboarding Form Validation', () => {
   it('shows error when cooperative name is empty on submit', async () => {
     const user = userEvent.setup()
-    render(<Onboarding />)
+    render(<OnboardingPage />)
 
     await user.click(screen.getByRole('button', { name: /next/i }))
 
@@ -18,7 +18,7 @@ describe('Onboarding Form Validation', () => {
 
   it('shows error when region is empty on submit', async () => {
     const user = userEvent.setup()
-    render(<Onboarding />)
+    render(<OnboardingPage />)
 
     await user.type(screen.getByLabelText(/cooperative name/i), 'Green Valley')
     await user.click(screen.getByRole('button', { name: /next/i }))
@@ -28,7 +28,7 @@ describe('Onboarding Form Validation', () => {
 
   it('clears error when user types in cooperative name', async () => {
     const user = userEvent.setup()
-    render(<Onboarding />)
+    render(<OnboardingPage />)
 
     await user.click(screen.getByRole('button', { name: /next/i }))
     expect(screen.getByText(/cooperative name is required/i)).toBeInTheDocument()
@@ -41,7 +41,7 @@ describe('Onboarding Form Validation', () => {
 
   it('prevents navigation when fields are invalid', async () => {
     const user = userEvent.setup()
-    render(<Onboarding />)
+    render(<OnboardingPage />)
 
     await user.click(screen.getByRole('button', { name: /next/i }))
 

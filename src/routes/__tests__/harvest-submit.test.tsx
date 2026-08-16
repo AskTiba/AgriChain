@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { Harvest } from '../harvest'
+import { HarvestPage } from '../../components/harvest-page'
 
 function createTestQueryClient() {
   return new QueryClient({
@@ -23,11 +23,17 @@ function renderWithQueryClient(ui: React.ReactElement) {
   )
 }
 
+vi.mock('~/app/server/harvests', () => ({
+  fetchHarvests: vi.fn().mockResolvedValue([]),
+  addHarvest: vi.fn().mockResolvedValue({}),
+  deleteHarvest: vi.fn().mockResolvedValue(undefined),
+}))
+
 describe('Harvest Form Submission', () => {
   it('calls onSubmit with form values when valid', async () => {
     const user = userEvent.setup()
     const onSubmit = vi.fn()
-    renderWithQueryClient(<Harvest onSubmit={onSubmit} />)
+    renderWithQueryClient(<HarvestPage onSubmit={onSubmit} />)
 
     await user.selectOptions(screen.getByLabelText(/crop type/i), 'maize')
     await user.selectOptions(screen.getByLabelText(/quality grade/i), 'A')
@@ -46,7 +52,7 @@ describe('Harvest Form Submission', () => {
   it('does not call onSubmit when fields are empty', async () => {
     const user = userEvent.setup()
     const onSubmit = vi.fn()
-    renderWithQueryClient(<Harvest onSubmit={onSubmit} />)
+    renderWithQueryClient(<HarvestPage onSubmit={onSubmit} />)
 
     await user.click(screen.getByRole('button', { name: /log harvest/i }))
 
@@ -56,7 +62,7 @@ describe('Harvest Form Submission', () => {
   it('shows success message after successful submission', async () => {
     const user = userEvent.setup()
     const onSubmit = vi.fn()
-    renderWithQueryClient(<Harvest onSubmit={onSubmit} />)
+    renderWithQueryClient(<HarvestPage onSubmit={onSubmit} />)
 
     await user.selectOptions(screen.getByLabelText(/crop type/i), 'maize')
     await user.selectOptions(screen.getByLabelText(/quality grade/i), 'A')
@@ -70,7 +76,7 @@ describe('Harvest Form Submission', () => {
   it('shows error message when submission fails', async () => {
     const user = userEvent.setup()
     const onSubmit = vi.fn().mockRejectedValue(new Error('Server error'))
-    renderWithQueryClient(<Harvest onSubmit={onSubmit} />)
+    renderWithQueryClient(<HarvestPage onSubmit={onSubmit} />)
 
     await user.selectOptions(screen.getByLabelText(/crop type/i), 'maize')
     await user.selectOptions(screen.getByLabelText(/quality grade/i), 'A')
@@ -86,7 +92,7 @@ describe('Harvest Form Submission', () => {
   it('resets form after successful submission', async () => {
     const user = userEvent.setup()
     const onSubmit = vi.fn()
-    renderWithQueryClient(<Harvest onSubmit={onSubmit} />)
+    renderWithQueryClient(<HarvestPage onSubmit={onSubmit} />)
 
     await user.selectOptions(screen.getByLabelText(/crop type/i), 'maize')
     await user.selectOptions(screen.getByLabelText(/quality grade/i), 'A')

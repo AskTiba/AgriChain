@@ -1,11 +1,11 @@
 import { describe, it, expect } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { Onboarding } from '../onboarding'
+import { OnboardingPage } from '../../components/onboarding-page'
 
 describe('Onboarding Wizard', () => {
   it('starts on the profile step', () => {
-    render(<Onboarding />)
+    render(<OnboardingPage />)
 
     expect(screen.getByText('Step 1 of 3')).toBeInTheDocument()
     expect(screen.getByLabelText(/cooperative name/i)).toBeInTheDocument()
@@ -13,7 +13,7 @@ describe('Onboarding Wizard', () => {
 
   it('navigates to role step when Next is clicked', async () => {
     const user = userEvent.setup()
-    render(<Onboarding />)
+    render(<OnboardingPage />)
 
     await user.type(screen.getByLabelText(/cooperative name/i), 'Green Valley')
     await user.type(screen.getByLabelText(/region/i), 'Western')
@@ -25,7 +25,7 @@ describe('Onboarding Wizard', () => {
 
   it('navigates back to profile step', async () => {
     const user = userEvent.setup()
-    render(<Onboarding />)
+    render(<OnboardingPage />)
 
     await user.type(screen.getByLabelText(/cooperative name/i), 'Green Valley')
     await user.type(screen.getByLabelText(/region/i), 'Western')
@@ -38,7 +38,7 @@ describe('Onboarding Wizard', () => {
 
   it('shows review step with all entered data', async () => {
     const user = userEvent.setup()
-    render(<Onboarding />)
+    render(<OnboardingPage />)
 
     await user.type(screen.getByLabelText(/cooperative name/i), 'Green Valley')
     await user.type(screen.getByLabelText(/region/i), 'Western')

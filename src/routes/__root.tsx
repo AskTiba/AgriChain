@@ -13,7 +13,6 @@ import { localStoragePersister } from '~/router'
 import { DefaultCatchBoundary } from '~/components/DefaultCatchBoundary'
 import { NotFound } from '~/components/NotFound'
 import appCss from '~/styles/app.css?url'
-import { seedData, seedDataScript } from '~/app/lib/seed-data'
 
 export const Route = createRootRouteWithContext<{
   queryClient: QueryClient
@@ -92,10 +91,6 @@ function RootDocument({ children }: { children: React.ReactNode }) {
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false)
 
   React.useEffect(() => {
-    seedData()
-  }, [])
-
-  React.useEffect(() => {
     const resolved = resolveTheme(mode)
     document.documentElement.classList.remove('light', 'dark')
     document.documentElement.classList.add(resolved)
@@ -132,7 +127,6 @@ function RootDocument({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <script dangerouslySetInnerHTML={{ __html: seedDataScript }} />
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
         <HeadContent />
       </head>
