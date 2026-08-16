@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { getDb } from '~/app/db'
 import { orders } from '~/app/db/schema'
 import { desc, eq } from 'drizzle-orm'
+import { authMiddleware } from './auth-middleware'
 
 const OrderStatusSchema = z.enum(['pending', 'confirmed', 'delivered'])
 
@@ -39,11 +40,11 @@ export const addOrder = createServerFn({ method: 'POST' })
   .validator(
     z.object({
       harvestId: z.string().uuid(),
-      buyerId: z.string().min(1),
       quantity: z.number().int().positive(),
     })
   )
-  .handler(async ({ data }) => {
+  .middleware([authMiddleware])
+  .handler(async ({ data, context }) => {
     const db = getDb()
     const maxOrder = await db
       .select({ orderNumber: orders.orderNumber })
@@ -62,13 +63,19 @@ export const addOrder = createServerFn({ method: 'POST' })
 
     const [newOrder] = await db
       .insert(orders)
-      .values({ ...data, orderNumber })
+      .values({
+        harvestId: data.harvestId,
+        buyerId: context.session.userId,
+        quantity: data.quantity,
+        orderNumber,
+      })
       .returning()
     return newOrder
   })
 
 export const updateOrderStatus = createServerFn({ method: 'POST' })
   .validator(z.object({ id: z.string().uuid(), status: OrderStatusSchema }))
+  .middleware([authMiddleware])
   .handler(async ({ data }) => {
     const db = getDb()
     const [updated] = await db
@@ -82,6 +89,7 @@ export const updateOrderStatus = createServerFn({ method: 'POST' })
 
 export const deleteOrder = createServerFn({ method: 'POST' })
   .validator(z.object({ id: z.string().uuid() }))
+  .middleware([authMiddleware])
   .handler(async ({ data }) => {
     const db = getDb()
     await db.delete(orders).where(eq(orders.id, data.id))

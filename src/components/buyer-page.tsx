@@ -7,7 +7,6 @@ export function BuyerPage() {
   const addOrder = useAddOrder()
   const [selectedHarvest, setSelectedHarvest] = useState<string | null>(null)
   const [orderQuantity, setOrderQuantity] = useState<number>(0)
-  const [buyerId] = useState(() => crypto.randomUUID())
 
   const handlePlaceOrder = (harvestId: string) => {
     const harvest = harvests.find((h) => h.id === harvestId)
@@ -15,7 +14,6 @@ export function BuyerPage() {
 
     addOrder.mutate({
       harvestId,
-      buyerId,
       quantity: orderQuantity,
     })
 

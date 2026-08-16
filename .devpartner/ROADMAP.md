@@ -26,12 +26,13 @@ A commercial-grade agricultural logistics and supply chain coordination platform
 - [x] Order detail view with shipment link
 
 ### Milestone 5: Authentication & Authorization
-- [ ] User registration and login (email + password)
-- [ ] Session management with HTTP-only cookies
-- [ ] Role-based route protection
+- [x] User registration and login (email + password)
+- [x] Session management with HTTP-only cookies
+- [x] Role-based route protection
 - [ ] Authenticated API calls (user context on server functions)
-- [ ] Login/register UI pages
+- [x] Login/register UI pages
 - [ ] Link users to existing cooperative roles
+- [ ] Google OAuth (deferred to follow-up)
 
 ### Milestone 6: Order Fulfillment Workflow
 - [ ] Order confirmation flow (buyer places → manager confirms)

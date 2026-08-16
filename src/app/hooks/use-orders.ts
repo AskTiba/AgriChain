@@ -39,7 +39,6 @@ export function useAddOrder() {
   return useMutation({
     mutationFn: (values: {
       harvestId: string
-      buyerId: string
       quantity: number
     }) => addOrder({ data: values }),
     onSuccess: () => {

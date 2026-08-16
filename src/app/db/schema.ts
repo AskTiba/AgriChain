@@ -6,6 +6,7 @@ export const harvestEntries = pgTable('harvest_entries', {
   qualityGrade: text('quality_grade').notNull(),
   quantity: integer('quantity').notNull(),
   fieldId: text('field_id').notNull(),
+  createdBy: uuid('created_by').references(() => users.id),
   timestamp: timestamp('timestamp', { withTimezone: true }).notNull().defaultNow(),
 })
 
