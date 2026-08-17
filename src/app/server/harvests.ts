@@ -3,7 +3,7 @@ import { z } from 'zod'
 import { getDb } from '~/app/db'
 import { harvestEntries } from '~/app/db/schema'
 import { desc, eq } from 'drizzle-orm'
-import { authMiddleware } from './auth-middleware'
+import { requireRole } from './auth-middleware'
 
 const HarvestInputSchema = z.object({
   cropType: z.string().min(1),
@@ -20,7 +20,7 @@ export const fetchHarvests = createServerFn({ method: 'GET' })
 
 export const addHarvest = createServerFn({ method: 'POST' })
   .validator(HarvestInputSchema)
-  .middleware([authMiddleware])
+  .middleware([requireRole(['admin', 'manager'])])
   .handler(async ({ data, context }) => {
     const db = getDb()
     const [newEntry] = await db
@@ -32,7 +32,7 @@ export const addHarvest = createServerFn({ method: 'POST' })
 
 export const deleteHarvest = createServerFn({ method: 'POST' })
   .validator(z.object({ id: z.string().uuid() }))
-  .middleware([authMiddleware])
+  .middleware([requireRole(['admin'])])
   .handler(async ({ data }) => {
     const db = getDb()
     await db.delete(harvestEntries).where(eq(harvestEntries.id, data.id))

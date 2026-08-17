@@ -3,7 +3,7 @@ import { z } from 'zod'
 import { getDb } from '~/app/db'
 import { assignments } from '~/app/db/schema'
 import { desc, eq } from 'drizzle-orm'
-import { authMiddleware } from './auth-middleware'
+import { requireRole } from './auth-middleware'
 
 const AssignmentInputSchema = z.object({
   harvestId: z.string().uuid(),
@@ -20,7 +20,7 @@ export const fetchAssignments = createServerFn({ method: 'GET' })
 
 export const addAssignment = createServerFn({ method: 'POST' })
   .validator(AssignmentInputSchema)
-  .middleware([authMiddleware])
+  .middleware([requireRole(['admin', 'manager'])])
   .handler(async ({ data }) => {
     const db = getDb()
     const [newAssignment] = await db.insert(assignments).values(data).returning()
@@ -29,7 +29,7 @@ export const addAssignment = createServerFn({ method: 'POST' })
 
 export const deleteAssignment = createServerFn({ method: 'POST' })
   .validator(z.object({ id: z.string().uuid() }))
-  .middleware([authMiddleware])
+  .middleware([requireRole(['admin'])])
   .handler(async ({ data }) => {
     const db = getDb()
     await db.delete(assignments).where(eq(assignments.id, data.id))

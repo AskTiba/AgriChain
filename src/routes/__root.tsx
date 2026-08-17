@@ -366,6 +366,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
     { to: '/buyer', label: 'Buyer' },
     { to: '/orders', label: 'Orders' },
     { to: '/cooperatives', label: 'Cooperatives' },
+    { to: '/invites', label: 'Invites' },
     { to: '/onboarding', label: 'Onboarding' },
   ]
 

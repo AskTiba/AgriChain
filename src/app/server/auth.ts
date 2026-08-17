@@ -2,8 +2,8 @@ import { createServerFn } from '@tanstack/react-start'
 import { z } from 'zod'
 import bcrypt from 'bcryptjs'
 import { getDb } from '~/app/db'
-import { users, sessions, harvestEntries, orders, notifications } from '~/app/db/schema'
-import { eq } from 'drizzle-orm'
+import { users, sessions, harvestEntries, orders, notifications, invites } from '~/app/db/schema'
+import { eq, and, gt, isNull } from 'drizzle-orm'
 import { useAppSession } from './session'
 import { resolveCurrentUser } from './auth-resilience'
 
@@ -13,7 +13,13 @@ const RegisterInputSchema = z.object({
   email: z.string().email(),
   name: z.string().min(1),
   password: z.string().min(8),
-  role: z.enum(['admin', 'manager', 'driver', 'buyer']).default('buyer'),
+})
+
+const InviteRegisterInputSchema = z.object({
+  email: z.string().email(),
+  name: z.string().min(1),
+  password: z.string().min(8),
+  inviteToken: z.string().uuid(),
 })
 
 const LoginInputSchema = z.object({
@@ -37,7 +43,7 @@ export const register = createServerFn({ method: 'POST' })
         email: data.email,
         name: data.name,
         passwordHash,
-        role: data.role,
+        role: 'buyer',
       }).returning()
 
       const session = await useAppSession()
@@ -56,6 +62,79 @@ export const register = createServerFn({ method: 'POST' })
       }
     } catch (e) {
       console.error('[AUTH] Register error:', (e as Error).message)
+      throw e
+    }
+  })
+
+export const inviteRegister = createServerFn({ method: 'POST' })
+  .validator(InviteRegisterInputSchema)
+  .handler(async ({ data }) => {
+    try {
+      const db = getDb()
+
+      // Validate invite
+      const [invite] = await db
+        .select()
+        .from(invites)
+        .where(eq(invites.token, data.inviteToken))
+        .limit(1)
+
+      if (!invite) {
+        throw new Error('Invalid invite link')
+      }
+
+      if (invite.usedAt) {
+        throw new Error('Invite already used')
+      }
+
+      if (new Date() > new Date(invite.expiresAt)) {
+        throw new Error('Invite has expired')
+      }
+
+      // Check email matches
+      if (invite.email.toLowerCase() !== data.email.toLowerCase()) {
+        throw new Error('Email does not match invite')
+      }
+
+      // Check user doesn't already exist
+      const existing = await db.select().from(users).where(eq(users.email, data.email)).limit(1)
+      if (existing.length > 0) {
+        throw new Error('Email already registered')
+      }
+
+      // Create user with invite role and cooperative
+      const passwordHash = await bcrypt.hash(data.password, SALT_ROUNDS)
+      const [newUser] = await db.insert(users).values({
+        email: data.email,
+        name: data.name,
+        passwordHash,
+        role: invite.role,
+        cooperativeId: invite.cooperativeId,
+      }).returning()
+
+      // Consume invite
+      await db
+        .update(invites)
+        .set({ usedAt: new Date() })
+        .where(eq(invites.id, invite.id))
+
+      // Create session
+      const session = await useAppSession()
+      await session.update({
+        userId: newUser.id,
+        email: newUser.email,
+        name: newUser.name,
+        role: newUser.role,
+      })
+
+      return {
+        id: newUser.id,
+        email: newUser.email,
+        name: newUser.name,
+        role: newUser.role,
+      }
+    } catch (e) {
+      console.error('[AUTH] Invite register error:', (e as Error).message)
       throw e
     }
   })

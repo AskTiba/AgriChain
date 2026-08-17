@@ -3,7 +3,7 @@ import { z } from 'zod'
 import { getDb } from '~/app/db'
 import { orders, notifications, users } from '~/app/db/schema'
 import { desc, eq, or } from 'drizzle-orm'
-import { authMiddleware } from './auth-middleware'
+import { authMiddleware, requireRole } from './auth-middleware'
 
 const OrderStatusSchema = z.enum(['pending', 'confirmed', 'in-transit', 'delivered'])
 
@@ -92,7 +92,7 @@ export const addOrder = createServerFn({ method: 'POST' })
 
 export const confirmOrder = createServerFn({ method: 'POST' })
   .validator(z.object({ id: z.string().uuid() }))
-  .middleware([authMiddleware])
+  .middleware([requireRole(['admin', 'manager'])])
   .handler(async ({ data, context }) => {
     const db = getDb()
     const [updated] = await db
@@ -115,7 +115,7 @@ export const confirmOrder = createServerFn({ method: 'POST' })
 
 export const assignDriver = createServerFn({ method: 'POST' })
   .validator(z.object({ id: z.string().uuid(), driverId: z.string().uuid() }))
-  .middleware([authMiddleware])
+  .middleware([requireRole(['admin', 'manager'])])
   .handler(async ({ data }) => {
     const db = getDb()
     const [updated] = await db
@@ -138,7 +138,7 @@ export const assignDriver = createServerFn({ method: 'POST' })
 
 export const updateOrderStatus = createServerFn({ method: 'POST' })
   .validator(z.object({ id: z.string().uuid(), status: OrderStatusSchema }))
-  .middleware([authMiddleware])
+  .middleware([requireRole(['admin', 'manager', 'driver'])])
   .handler(async ({ data }) => {
     const db = getDb()
     const [updated] = await db
@@ -158,7 +158,7 @@ export const updateOrderStatus = createServerFn({ method: 'POST' })
 
 export const deleteOrder = createServerFn({ method: 'POST' })
   .validator(z.object({ id: z.string().uuid() }))
-  .middleware([authMiddleware])
+  .middleware([requireRole(['admin'])])
   .handler(async ({ data }) => {
     const db = getDb()
     await db.delete(orders).where(eq(orders.id, data.id))

@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { getCurrentUser, login, logout, register, deleteAccount } from '~/app/server/auth'
+import { getCurrentUser, login, logout, register, inviteRegister, deleteAccount } from '~/app/server/auth'
 
 export const USER_QUERY_KEY = ['currentUser'] as const
 
@@ -32,8 +32,23 @@ export function useRegister() {
       email: string
       name: string
       password: string
-      role?: 'admin' | 'manager' | 'driver' | 'buyer'
     }) => register({ data: values }),
+    onSuccess: (user) => {
+      queryClient.setQueryData(USER_QUERY_KEY, user)
+    },
+  })
+}
+
+export function useInviteRegister() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (values: {
+      email: string
+      name: string
+      password: string
+      inviteToken: string
+    }) => inviteRegister({ data: values }),
     onSuccess: (user) => {
       queryClient.setQueryData(USER_QUERY_KEY, user)
     },

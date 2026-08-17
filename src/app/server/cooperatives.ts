@@ -3,7 +3,7 @@ import { z } from 'zod'
 import { getDb } from '~/app/db'
 import { cooperatives, users } from '~/app/db/schema'
 import { desc, eq, isNull } from 'drizzle-orm'
-import { authMiddleware } from './auth-middleware'
+import { requireRole } from './auth-middleware'
 
 export const fetchCooperatives = createServerFn({ method: 'GET' })
   .handler(async () => {
@@ -26,7 +26,7 @@ export const createCooperative = createServerFn({ method: 'POST' })
       location: z.string().min(1),
     })
   )
-  .middleware([authMiddleware])
+  .middleware([requireRole(['admin'])])
   .handler(async ({ data, context }) => {
     const db = getDb()
     const [coop] = await db
@@ -42,7 +42,7 @@ export const createCooperative = createServerFn({ method: 'POST' })
 
 export const assignUserToCooperative = createServerFn({ method: 'POST' })
   .validator(z.object({ userId: z.string().uuid(), cooperativeId: z.string().uuid() }))
-  .middleware([authMiddleware])
+  .middleware([requireRole(['admin', 'manager'])])
   .handler(async ({ data }) => {
     const db = getDb()
     await db.update(users).set({ cooperativeId: data.cooperativeId }).where(eq(users.id, data.userId))
@@ -63,10 +63,9 @@ export const completeOnboarding = createServerFn({ method: 'POST' })
     z.object({
       coopName: z.string().min(1),
       region: z.string().min(1),
-      role: z.enum(['admin', 'manager', 'driver', 'buyer']),
     })
   )
-  .middleware([authMiddleware])
+  .middleware([requireRole(['buyer'])])
   .handler(async ({ data, context }) => {
     const db = getDb()
 
@@ -81,7 +80,7 @@ export const completeOnboarding = createServerFn({ method: 'POST' })
 
     await db
       .update(users)
-      .set({ cooperativeId: coop.id, role: data.role })
+      .set({ cooperativeId: coop.id })
       .where(eq(users.id, context.session.userId))
 
     return coop

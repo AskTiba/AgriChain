@@ -1,6 +1,6 @@
 import { createServerFn } from '@tanstack/react-start'
 import { z } from 'zod'
-import { authMiddleware } from './auth-middleware'
+import { requireRole } from './auth-middleware'
 import { createWarehouse, fetchWarehousesWithCapacity, assignHarvestToWarehouse } from './warehouse-service'
 
 const CreateWarehouseSchema = z.object({
@@ -17,7 +17,7 @@ export const fetchWarehouses = createServerFn({ method: 'GET' })
 
 export const addWarehouse = createServerFn({ method: 'POST' })
   .validator(CreateWarehouseSchema)
-  .middleware([authMiddleware])
+  .middleware([requireRole(['admin', 'manager'])])
   .handler(async ({ data }) => {
     return createWarehouse(data)
   })
@@ -27,7 +27,7 @@ export const assignHarvest = createServerFn({ method: 'POST' })
     harvestId: z.string().uuid(),
     warehouseId: z.string().uuid().nullable(),
   }))
-  .middleware([authMiddleware])
+  .middleware([requireRole(['admin', 'manager'])])
   .handler(async ({ data }) => {
     return assignHarvestToWarehouse(data.harvestId, data.warehouseId)
   })

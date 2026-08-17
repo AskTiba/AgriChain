@@ -1,6 +1,5 @@
 import { useForm } from '@tanstack/react-form'
 import { useState } from 'react'
-import { RoleSelector } from './role-selector'
 import { Wizard } from './wizard'
 import { Input } from './ui/input'
 import { completeOnboarding } from '~/app/server/cooperatives'
@@ -17,7 +16,6 @@ export function OnboardingPage() {
     defaultValues: {
       coopName: '',
       region: '',
-      role: (currentUser?.role || 'buyer') as 'admin' | 'manager' | 'driver' | 'buyer',
     },
     onSubmit: async ({ value }) => {
       setError(null)
@@ -34,7 +32,7 @@ export function OnboardingPage() {
     },
   })
 
-  const TOTAL_STEPS = 3
+  const TOTAL_STEPS = 2
 
   const validateStep = (step: number): boolean => {
     const errors: string[] = []
@@ -43,8 +41,6 @@ export function OnboardingPage() {
     if (step === 0) {
       if (!state.values.coopName) errors.push('Cooperative name is required')
       if (!state.values.region) errors.push('Region is required')
-    } else if (step === 1) {
-      if (!state.values.role) errors.push('Role is required')
     }
 
     setStepErrors((prev) => ({ ...prev, [step]: errors }))
@@ -209,36 +205,6 @@ export function OnboardingPage() {
             {currentStep === 1 && (
               <div className="space-y-6">
                 <h2 className="font-semibold text-[var(--color-text)]" style={{ fontSize: 'clamp(1.125rem, 1.5vw + 0.5rem, 1.5rem)' }}>
-                  Select Your Role
-                </h2>
-
-                <form.Field
-                  name="role"
-                  validators={{
-                    onChange: ({ value }) =>
-                      !value ? 'Role is required' : undefined,
-                  }}
-                >
-                  {(field) => (
-                    <div>
-                      <RoleSelector
-                        value={field.state.value}
-                        onChange={(role) => field.handleChange(role as 'admin' | 'manager' | 'driver' | 'buyer')}
-                      />
-                      {field.state.meta.errors.length > 0 && (
-                        <p id="role-error" role="alert" className="mt-1 text-sm text-[var(--color-danger)]">
-                          {field.state.meta.errors[0]}
-                        </p>
-                      )}
-                    </div>
-                  )}
-                </form.Field>
-              </div>
-            )}
-
-            {currentStep === 2 && (
-              <div className="space-y-6">
-                <h2 className="font-semibold text-[var(--color-text)]" style={{ fontSize: 'clamp(1.125rem, 1.5vw + 0.5rem, 1.5rem)' }}>
                   Review Your Profile
                 </h2>
 
@@ -255,17 +221,13 @@ export function OnboardingPage() {
                         <dt className="text-sm text-[var(--color-text-muted)]">Region</dt>
                         <dd className="text-sm font-medium text-[var(--color-text)]">{values.region || '—'}</dd>
                       </div>
-                      <div className="flex justify-between">
-                        <dt className="text-sm text-[var(--color-text-muted)]">Role</dt>
-                        <dd className="text-sm font-medium text-[var(--color-text)]">{values.role || '—'}</dd>
-                      </div>
                     </dl>
                   )}
                 </form.Subscribe>
               </div>
             )}
 
-            {currentErrors.length > 0 && currentStep === 1 && (
+            {currentErrors.length > 0 && currentStep === 0 && (
               <div role="alert" className="mt-4 space-y-1">
                 {currentErrors.map((err, i) => (
                   <p key={i} className="text-sm text-[var(--color-danger)]">{err}</p>
