@@ -24,7 +24,7 @@ export const orders = pgTable('orders', {
   id: uuid('id').primaryKey().defaultRandom(),
   orderNumber: text('order_number').notNull().unique(),
   harvestId: uuid('harvest_id').references(() => harvestEntries.id),
-  buyerId: uuid('buyer_id').references(() => users.id).notNull(),
+  buyerId: uuid('buyer_id').references(() => users.id),
   quantity: integer('quantity').notNull(),
   status: text('status', { enum: ['pending', 'confirmed', 'in-transit', 'delivered'] })
     .notNull()

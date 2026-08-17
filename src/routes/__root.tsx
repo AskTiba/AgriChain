@@ -14,7 +14,7 @@ import { localStoragePersister } from '~/router'
 import { DefaultCatchBoundary } from '~/components/DefaultCatchBoundary'
 import { NotFound } from '~/components/NotFound'
 import { getCurrentUser } from '~/app/server/auth'
-import { useLogout } from '~/app/hooks/use-auth'
+import { useLogout, useDeleteAccount } from '~/app/hooks/use-auth'
 import { useUnreadCount } from '~/app/hooks/use-notifications'
 import type { SafeUser } from '~/app/db/schema'
 import appCss from '~/styles/app.css?url'
@@ -89,23 +89,114 @@ function NotificationBell() {
 
 function AuthButtons({ user }: { user: { name: string } }) {
   const logoutMutation = useLogout()
+  const deleteAccountMutation = useDeleteAccount()
+  const [showDeleteConfirm, setShowDeleteConfirm] = React.useState(false)
+  const [password, setPassword] = React.useState('')
+  const [menuOpen, setMenuOpen] = React.useState(false)
 
   const handleLogout = async () => {
     await logoutMutation.mutateAsync()
     window.location.href = '/login'
   }
 
+  const handleDeleteAccount = async () => {
+    if (!password) return
+    await deleteAccountMutation.mutateAsync({ password })
+    window.location.href = '/login'
+  }
+
   return (
     <div className="hidden items-center gap-3 md:flex">
       <NotificationBell />
-      <span className="text-sm text-[var(--color-text-muted)]">{user.name}</span>
-      <button
-        onClick={handleLogout}
-        disabled={logoutMutation.isPending}
-        className="inline-flex min-h-[44px] cursor-pointer items-center rounded-[var(--radius-md)] border border-[var(--color-border)] px-4 py-2 text-sm font-medium text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-surface)] hover:text-[var(--color-text)] disabled:opacity-50"
-      >
-        {logoutMutation.isPending ? 'Signing out...' : 'Sign Out'}
-      </button>
+
+      {/* User menu dropdown */}
+      <div className="relative">
+        <button
+          onClick={() => setMenuOpen(!menuOpen)}
+          className="inline-flex min-h-[44px] cursor-pointer items-center gap-1.5 rounded-[var(--radius-md)] px-3 py-2 text-sm font-medium text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-surface)] hover:text-[var(--color-text)]"
+          aria-expanded={menuOpen}
+          aria-haspopup="true"
+        >
+          <span>{user.name}</span>
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="m6 9 6 6 6-6"/>
+          </svg>
+        </button>
+
+        {menuOpen && (
+          <>
+            <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)} />
+            <div className="absolute right-0 z-50 mt-1 w-56 rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-surface)] shadow-lg" role="menu">
+              <div className="border-b border-[var(--color-border-subtle)] px-4 py-3">
+                <p className="text-sm font-medium text-[var(--color-text)]">{user.name}</p>
+              </div>
+              <button
+                onClick={() => { setMenuOpen(false); setShowDeleteConfirm(true) }}
+                className="flex w-full cursor-pointer items-center gap-2 px-4 py-2.5 text-left text-sm font-medium text-[var(--color-danger)] transition-colors hover:bg-[var(--color-surface)]"
+                role="menuitem"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
+                </svg>
+                Delete Account
+              </button>
+              <div className="border-t border-[var(--color-border-subtle)]">
+                <button
+                  onClick={handleLogout}
+                  disabled={logoutMutation.isPending}
+                  className="flex w-full cursor-pointer items-center gap-2 px-4 py-2.5 text-left text-sm font-medium text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-surface)] disabled:opacity-50"
+                  role="menuitem"
+                >
+                  {logoutMutation.isPending ? 'Signing out...' : 'Sign Out'}
+                </button>
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* Delete account confirmation dialog */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50">
+          <div className="mx-4 w-full max-w-md rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-surface)] p-6 shadow-xl">
+            <h3 className="text-lg font-semibold text-[var(--color-text)]">Delete Account</h3>
+            <p className="mt-2 text-sm text-[var(--color-text-muted)]">
+              This action is permanent. Your orders and harvest records will be kept but unlinked from your account.
+            </p>
+            <p className="mt-2 text-sm font-medium text-[var(--color-text)]">
+              Enter your password to confirm:
+            </p>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Password"
+              className="mt-2 block w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-background)] px-3 py-2.5 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-subtle)] focus:border-[var(--color-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)]"
+              autoFocus
+            />
+            {deleteAccountMutation.isError && (
+              <p className="mt-2 text-sm text-[var(--color-danger)]">
+                {deleteAccountMutation.error?.message || 'Failed to delete account'}
+              </p>
+            )}
+            <div className="mt-4 flex justify-end gap-3">
+              <button
+                onClick={() => { setShowDeleteConfirm(false); setPassword('') }}
+                className="inline-flex min-h-[44px] cursor-pointer items-center rounded-[var(--radius-md)] border border-[var(--color-border)] px-4 py-2 text-sm font-medium text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-surface)]"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteAccount}
+                disabled={!password || deleteAccountMutation.isPending}
+                className="inline-flex min-h-[44px] cursor-pointer items-center rounded-[var(--radius-md)] bg-[var(--color-danger)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--color-danger)]/90 disabled:opacity-50"
+              >
+                {deleteAccountMutation.isPending ? 'Deleting...' : 'Delete My Account'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -126,6 +217,74 @@ function MobileLogoutButton() {
     >
       {logoutMutation.isPending ? 'Signing out...' : 'Sign Out'}
     </button>
+  )
+}
+
+function MobileDeleteAccountButton() {
+  const deleteAccountMutation = useDeleteAccount()
+  const [showConfirm, setShowConfirm] = React.useState(false)
+  const [password, setPassword] = React.useState('')
+
+  const handleDelete = async () => {
+    if (!password) return
+    await deleteAccountMutation.mutateAsync({ password })
+    window.location.href = '/login'
+  }
+
+  return (
+    <>
+      <button
+        onClick={() => setShowConfirm(true)}
+        className="flex w-full cursor-pointer items-center gap-2 px-3 py-2.5 text-left text-sm font-medium text-[var(--color-danger)] transition-colors hover:bg-[var(--color-surface)]"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
+        </svg>
+        Delete Account
+      </button>
+
+      {showConfirm && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50">
+          <div className="mx-4 w-full max-w-md rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-surface)] p-6 shadow-xl">
+            <h3 className="text-lg font-semibold text-[var(--color-text)]">Delete Account</h3>
+            <p className="mt-2 text-sm text-[var(--color-text-muted)]">
+              This action is permanent. Your orders and harvest records will be kept but unlinked from your account.
+            </p>
+            <p className="mt-2 text-sm font-medium text-[var(--color-text)]">
+              Enter your password to confirm:
+            </p>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Password"
+              className="mt-2 block w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-background)] px-3 py-2.5 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-subtle)] focus:border-[var(--color-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)]"
+              autoFocus
+            />
+            {deleteAccountMutation.isError && (
+              <p className="mt-2 text-sm text-[var(--color-danger)]">
+                {deleteAccountMutation.error?.message || 'Failed to delete account'}
+              </p>
+            )}
+            <div className="mt-4 flex justify-end gap-3">
+              <button
+                onClick={() => { setShowConfirm(false); setPassword('') }}
+                className="inline-flex min-h-[44px] cursor-pointer items-center rounded-[var(--radius-md)] border border-[var(--color-border)] px-4 py-2 text-sm font-medium text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-surface)]"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDelete}
+                disabled={!password || deleteAccountMutation.isPending}
+                className="inline-flex min-h-[44px] cursor-pointer items-center rounded-[var(--radius-md)] bg-[var(--color-danger)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--color-danger)]/90 disabled:opacity-50"
+              >
+                {deleteAccountMutation.isPending ? 'Deleting...' : 'Delete My Account'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   )
 }
 
@@ -359,6 +518,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
                             Signed in as <span className="font-medium text-[var(--color-text)]">{user.name}</span>
                           </div>
                           <MobileLogoutButton />
+                          <MobileDeleteAccountButton />
                         </>
                       ) : (
                         <>

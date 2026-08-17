@@ -106,7 +106,9 @@ export const confirmOrder = createServerFn({ method: 'POST' })
       .returning()
     if (!updated) throw new Error('Order not found')
 
-    await notifyUser(db, updated.buyerId, 'order_confirmed', `Order ${updated.orderNumber} has been confirmed`, updated.id)
+    if (updated.buyerId) {
+      await notifyUser(db, updated.buyerId, 'order_confirmed', `Order ${updated.orderNumber} has been confirmed`, updated.id)
+    }
 
     return updated
   })
@@ -126,7 +128,9 @@ export const assignDriver = createServerFn({ method: 'POST' })
       .returning()
     if (!updated) throw new Error('Order not found')
 
-    await notifyUser(db, updated.buyerId, 'driver_assigned', `A driver has been assigned to order ${updated.orderNumber}`, updated.id)
+    if (updated.buyerId) {
+      await notifyUser(db, updated.buyerId, 'driver_assigned', `A driver has been assigned to order ${updated.orderNumber}`, updated.id)
+    }
     await notifyUser(db, data.driverId, 'driver_assigned', `You have been assigned to order ${updated.orderNumber}`, updated.id)
 
     return updated
@@ -144,8 +148,10 @@ export const updateOrderStatus = createServerFn({ method: 'POST' })
       .returning()
     if (!updated) throw new Error('Order not found')
 
-    const statusLabel = data.status === 'in-transit' ? 'in transit' : data.status
-    await notifyUser(db, updated.buyerId, 'status_changed', `Order ${updated.orderNumber} is now ${statusLabel}`, updated.id)
+    if (updated.buyerId) {
+      const statusLabel = data.status === 'in-transit' ? 'in transit' : data.status
+      await notifyUser(db, updated.buyerId, 'status_changed', `Order ${updated.orderNumber} is now ${statusLabel}`, updated.id)
+    }
 
     return updated
   })

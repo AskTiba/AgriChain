@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { getCurrentUser, login, logout, register } from '~/app/server/auth'
+import { getCurrentUser, login, logout, register, deleteAccount } from '~/app/server/auth'
 
 export const USER_QUERY_KEY = ['currentUser'] as const
 
@@ -45,6 +45,17 @@ export function useLogout() {
 
   return useMutation({
     mutationFn: () => logout({}),
+    onSuccess: () => {
+      queryClient.setQueryData(USER_QUERY_KEY, null)
+    },
+  })
+}
+
+export function useDeleteAccount() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (values: { password: string }) => deleteAccount({ data: values }),
     onSuccess: () => {
       queryClient.setQueryData(USER_QUERY_KEY, null)
     },

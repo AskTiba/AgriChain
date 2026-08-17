@@ -2,7 +2,7 @@ import { createServerFn } from '@tanstack/react-start'
 import { z } from 'zod'
 import bcrypt from 'bcryptjs'
 import { getDb } from '~/app/db'
-import { users, sessions } from '~/app/db/schema'
+import { users, sessions, harvestEntries, orders, notifications } from '~/app/db/schema'
 import { eq } from 'drizzle-orm'
 import { useAppSession } from './session'
 import { resolveCurrentUser } from './auth-resilience'
@@ -109,6 +109,36 @@ export const logout = createServerFn({ method: 'POST' })
     }
 
     await session.update({})
+    return { ok: true }
+  })
+
+export const deleteAccount = createServerFn({ method: 'POST' })
+  .validator(z.object({ password: z.string() }))
+  .handler(async ({ data }) => {
+    const session = await useAppSession()
+    const userId = session.data.userId
+    if (!userId) throw new Error('Not authenticated')
+
+    const db = getDb()
+
+    const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1)
+    if (!user) throw new Error('User not found')
+
+    const passwordValid = await bcrypt.compare(data.password, user.passwordHash)
+    if (!passwordValid) throw new Error('Incorrect password')
+
+    await db.delete(sessions).where(eq(sessions.userId, userId))
+    await db.delete(notifications).where(eq(notifications.userId, userId))
+
+    await db.update(harvestEntries).set({ createdBy: null }).where(eq(harvestEntries.createdBy, userId))
+    await db.update(orders).set({ buyerId: null }).where(eq(orders.buyerId, userId))
+    await db.update(orders).set({ confirmedBy: null }).where(eq(orders.confirmedBy, userId))
+    await db.update(orders).set({ assignedDriverId: null }).where(eq(orders.assignedDriverId, userId))
+
+    await db.delete(users).where(eq(users.id, userId))
+
+    await session.update({})
+
     return { ok: true }
   })
 
