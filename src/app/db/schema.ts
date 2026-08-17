@@ -114,3 +114,18 @@ export type Cooperative = typeof cooperatives.$inferSelect
 export type NewCooperative = typeof cooperatives.$inferInsert
 export type Warehouse = typeof warehouses.$inferSelect
 export type NewWarehouse = typeof warehouses.$inferInsert
+
+export const invites = pgTable('invites', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  email: varchar('email', { length: 255 }).notNull(),
+  role: text('role', { enum: ['admin', 'manager', 'driver', 'buyer'] }).notNull(),
+  cooperativeId: uuid('cooperative_id').references(() => cooperatives.id),
+  token: uuid('token').notNull().unique().defaultRandom(),
+  createdBy: uuid('created_by').references(() => users.id).notNull(),
+  usedAt: timestamp('used_at', { withTimezone: true }),
+  expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+})
+
+export type Invite = typeof invites.$inferSelect
+export type NewInvite = typeof invites.$inferInsert
