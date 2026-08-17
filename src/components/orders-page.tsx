@@ -171,6 +171,15 @@ export function OrdersPage() {
                       </td>
                       <td className="whitespace-nowrap px-6 py-4 text-sm">
                         <div className="flex items-center gap-2">
+                          {/* Always show View link */}
+                          <Link
+                            to="/orders/$orderNumber"
+                            params={{ orderNumber: order.orderNumber }}
+                            className="inline-flex min-h-[44px] cursor-pointer items-center rounded-[var(--radius-md)] border border-[var(--color-border)] px-3 py-1.5 text-xs font-medium text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-surface)] hover:text-[var(--color-text)]"
+                          >
+                            View
+                          </Link>
+
                           {/* Manager: Confirm pending orders */}
                           {isManager && order.status === 'pending' && (
                             <button
