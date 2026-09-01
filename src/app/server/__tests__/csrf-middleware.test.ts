@@ -1,5 +1,11 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { csrfCookieName, csrfHeaderName, validateCsrfRequest } from '../csrf-middleware'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import {
+  csrfCookieName,
+  csrfHeaderName,
+  validateCsrfRequest,
+  readCookieFromString,
+  getClientCsrfToken,
+} from '../csrf-middleware'
 
 function mockRequest(headers: Record<string, string>, cookies: Record<string, string>) {
   const cookieStr = Object.entries(cookies)
@@ -18,6 +24,37 @@ function mockRequest(headers: Record<string, string>, cookies: Record<string, st
 describe('csrf-middleware', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+  })
+
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
+  describe('readCookieFromString', () => {
+    it('parses a named cookie value', () => {
+      expect(readCookieFromString('a=1; agri-tech-csrf=abc; b=2', csrfCookieName)).toBe('abc')
+    })
+
+    it('returns undefined when cookie missing', () => {
+      expect(readCookieFromString('a=1; b=2', csrfCookieName)).toBeUndefined()
+    })
+
+    it('returns undefined for empty input', () => {
+      expect(readCookieFromString(undefined, csrfCookieName)).toBeUndefined()
+      expect(readCookieFromString('', csrfCookieName)).toBeUndefined()
+    })
+  })
+
+  describe('getClientCsrfToken', () => {
+    it('reads the token from document.cookie', () => {
+      vi.stubGlobal('document', { cookie: `${csrfCookieName}=client-token; other=1` })
+      expect(getClientCsrfToken()).toBe('client-token')
+    })
+
+    it('returns undefined when document is not defined', () => {
+      vi.stubGlobal('document', undefined)
+      expect(getClientCsrfToken()).toBeUndefined()
+    })
   })
 
   describe('validateCsrfRequest', () => {

@@ -13,6 +13,11 @@ describe('csrf', () => {
       expect(token.length).toBeGreaterThan(0)
     })
 
+    it('generates 64 hex characters', () => {
+      const token = generateCsrfToken()
+      expect(token).toMatch(/^[0-9a-f]{64}$/)
+    })
+
     it('generates unique tokens', () => {
       const token1 = generateCsrfToken()
       const token2 = generateCsrfToken()
