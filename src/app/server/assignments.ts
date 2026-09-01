@@ -1,9 +1,10 @@
 import { createServerFn } from '@tanstack/react-start'
 import { z } from 'zod'
 import { getDb } from '~/app/db'
-import { assignments } from '~/app/db/schema'
+import { assignments, type Assignment } from '~/app/db/schema'
 import { desc, eq } from 'drizzle-orm'
 import { requireRole, authMiddleware } from './auth-middleware'
+import { withAuditLog, type AuditContext } from './audit-middleware'
 
 const AssignmentInputSchema = z.object({
   harvestId: z.string().uuid(),
@@ -22,16 +23,30 @@ export const fetchAssignments = createServerFn({ method: 'GET' })
 export const addAssignment = createServerFn({ method: 'POST' })
   .validator(AssignmentInputSchema)
   .middleware([requireRole(['admin', 'manager'])])
-  .handler(async ({ data }) => {
-    const db = getDb()
-    const [newAssignment] = await db.insert(assignments).values(data).returning()
-    return newAssignment
-  })
+  .handler(
+    withAuditLog<z.infer<typeof AssignmentInputSchema>, Assignment>(
+      async ({ data, context }: { data: z.infer<typeof AssignmentInputSchema>; context: AuditContext }) => {
+        const db = getDb()
+        const [newAssignment] = await db.insert(assignments).values(data).returning()
+        return newAssignment
+      },
+      { action: 'assignment.create', entityType: 'assignment' },
+    ),
+  )
 
 export const deleteAssignment = createServerFn({ method: 'POST' })
   .validator(z.object({ id: z.string().uuid() }))
   .middleware([requireRole(['admin'])])
-  .handler(async ({ data }) => {
-    const db = getDb()
-    await db.delete(assignments).where(eq(assignments.id, data.id))
-  })
+  .handler(
+    withAuditLog<{ id: string }, void>(
+      async ({ data }: { data: { id: string }; context: AuditContext }) => {
+        const db = getDb()
+        await db.delete(assignments).where(eq(assignments.id, data.id))
+      },
+      {
+        action: 'assignment.delete',
+        entityType: 'assignment',
+        getEntityId: (_, d) => (d as { id: string }).id,
+      },
+    ),
+  )

@@ -1,9 +1,10 @@
 import { createServerFn } from '@tanstack/react-start'
 import { z } from 'zod'
 import { getDb } from '~/app/db'
-import { cooperatives, users } from '~/app/db/schema'
+import { cooperatives, users, type Cooperative } from '~/app/db/schema'
 import { desc, eq, isNull } from 'drizzle-orm'
 import { requireRole, authMiddleware } from './auth-middleware'
+import { withAuditLog, type AuditContext } from './audit-middleware'
 
 export const fetchCooperatives = createServerFn({ method: 'GET' })
   .middleware([authMiddleware])
@@ -29,26 +30,41 @@ export const createCooperative = createServerFn({ method: 'POST' })
     })
   )
   .middleware([requireRole(['admin'])])
-  .handler(async ({ data, context }) => {
-    const db = getDb()
-    const [coop] = await db
-      .insert(cooperatives)
-      .values({
-        name: data.name,
-        location: data.location,
-        createdBy: context.session.userId,
-      })
-      .returning()
-    return coop
-  })
+  .handler(
+    withAuditLog<{ name: string; location: string }, Cooperative>(
+      async ({ data, context }: { data: { name: string; location: string }; context: AuditContext }) => {
+        const db = getDb()
+        const [coop] = await db
+          .insert(cooperatives)
+          .values({
+            name: data.name,
+            location: data.location,
+            createdBy: context.session.userId,
+          })
+          .returning()
+        return coop
+      },
+      { action: 'cooperative.create', entityType: 'cooperative' },
+    ),
+  )
 
 export const assignUserToCooperative = createServerFn({ method: 'POST' })
   .validator(z.object({ userId: z.string().uuid(), cooperativeId: z.string().uuid() }))
   .middleware([requireRole(['admin', 'manager'])])
-  .handler(async ({ data }) => {
-    const db = getDb()
-    await db.update(users).set({ cooperativeId: data.cooperativeId }).where(eq(users.id, data.userId))
-  })
+  .handler(
+    withAuditLog<{ userId: string; cooperativeId: string }, void>(
+      async ({ data }: { data: { userId: string; cooperativeId: string }; context: AuditContext }) => {
+        const db = getDb()
+        await db.update(users).set({ cooperativeId: data.cooperativeId }).where(eq(users.id, data.userId))
+      },
+      {
+        action: 'cooperative.assign_user',
+        entityType: 'cooperative',
+        getEntityId: (_, d) => (d as { cooperativeId: string }).cooperativeId,
+        getDetails: (d) => ({ userId: (d as { userId: string }).userId, cooperativeId: (d as { cooperativeId: string }).cooperativeId }),
+      },
+    ),
+  )
 
 export const fetchUsersByCooperative = createServerFn({ method: 'GET' })
   .validator(z.object({ cooperativeId: z.string().uuid() }))
@@ -69,25 +85,30 @@ export const completeOnboarding = createServerFn({ method: 'POST' })
     })
   )
   .middleware([requireRole(['buyer'])])
-  .handler(async ({ data, context }) => {
-    const db = getDb()
+  .handler(
+    withAuditLog<{ coopName: string; region: string }, Cooperative>(
+      async ({ data, context }: { data: { coopName: string; region: string }; context: AuditContext }) => {
+        const db = getDb()
 
-    const [coop] = await db
-      .insert(cooperatives)
-      .values({
-        name: data.coopName,
-        location: data.region,
-        createdBy: context.session.userId,
-      })
-      .returning()
+        const [coop] = await db
+          .insert(cooperatives)
+          .values({
+            name: data.coopName,
+            location: data.region,
+            createdBy: context.session.userId,
+          })
+          .returning()
 
-    await db
-      .update(users)
-      .set({ cooperativeId: coop.id })
-      .where(eq(users.id, context.session.userId))
+        await db
+          .update(users)
+          .set({ cooperativeId: coop.id })
+          .where(eq(users.id, context.session.userId))
 
-    return coop
-  })
+        return coop
+      },
+      { action: 'cooperative.onboard', entityType: 'cooperative' },
+    ),
+  )
 
 export const fetchUnassignedUsers = createServerFn({ method: 'GET' })
   .middleware([authMiddleware])

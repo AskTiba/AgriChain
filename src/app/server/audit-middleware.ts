@@ -11,11 +11,19 @@ export interface AuditContext {
   }
 }
 
+export interface PublicAuditContext {
+  userId: string
+  email: string
+  name: string
+  role: string
+}
+
 export interface WithAuditLogOptions {
   action: string
   entityType: string
   getEntityId?: (result: unknown, data: unknown) => string | undefined
   getDetails?: (data: unknown) => Record<string, unknown>
+  publicContext?: PublicAuditContext
 }
 
 export function withAuditLog<TInput, TResult>(
@@ -31,6 +39,36 @@ export function withAuditLog<TInput, TResult>(
 
       await createAuditLog({
         userId: args.context.session.userId,
+        action: options.action,
+        entityType: options.entityType,
+        entityId,
+        details,
+      })
+    } catch {
+      // Audit logging failure should not break the handler
+    }
+
+    return result
+  }
+}
+
+export function withAuditLogPublic<TInput, TResult>(
+  handler: (args: { data: TInput }) => Promise<TResult>,
+  options: WithAuditLogOptions,
+) {
+  return async (args: { data: TInput }): Promise<TResult> => {
+    const result = await handler(args)
+
+    try {
+      const entityId = options.getEntityId?.(result, args.data) ?? (result as Record<string, unknown>)?.id as string | undefined
+      const details = options.getDetails?.(args.data) ?? (args.data as Record<string, unknown>)
+
+      if (!options.publicContext) {
+        throw new Error('publicContext required for public audit logging')
+      }
+
+      await createAuditLog({
+        userId: options.publicContext.userId,
         action: options.action,
         entityType: options.entityType,
         entityId,

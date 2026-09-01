@@ -1,9 +1,10 @@
 import { createServerFn } from '@tanstack/react-start'
 import { z } from 'zod'
 import { getDb } from '~/app/db'
-import { invites, users } from '~/app/db/schema'
+import { invites, users, type Invite } from '~/app/db/schema'
 import { eq, and, gt, isNull, desc } from 'drizzle-orm'
 import { requireRole, authMiddleware } from './auth-middleware'
+import { withAuditLog, withAuditLogPublic, type AuditContext, type PublicAuditContext } from './audit-middleware'
 
 const EXPIRY_DAYS = 7
 
@@ -16,25 +17,33 @@ export const createInvite = createServerFn({ method: 'POST' })
     })
   )
   .middleware([requireRole(['admin', 'manager'])])
-  .handler(async ({ data, context }) => {
-    const db = getDb()
+  .handler(
+    withAuditLog<
+      { email: string; role: string; cooperativeId?: string | null | undefined },
+      Invite
+    >(
+      async ({ data, context }: { data: { email: string; role: string; cooperativeId?: string | null | undefined }; context: AuditContext }) => {
+        const db = getDb()
 
-    const expiresAt = new Date()
-    expiresAt.setDate(expiresAt.getDate() + EXPIRY_DAYS)
+        const expiresAt = new Date()
+        expiresAt.setDate(expiresAt.getDate() + EXPIRY_DAYS)
 
-    const [invite] = await db
-      .insert(invites)
-      .values({
-        email: data.email,
-        role: data.role,
-        cooperativeId: data.cooperativeId ?? null,
-        createdBy: context.session.userId,
-        expiresAt,
-      })
-      .returning()
+        const [invite] = await db
+          .insert(invites)
+          .values({
+            email: data.email,
+            role: data.role,
+            cooperativeId: data.cooperativeId ?? null,
+            createdBy: context.session.userId,
+            expiresAt,
+          } as typeof invites.$inferInsert)
+          .returning()
 
-    return invite
-  })
+        return invite
+      },
+      { action: 'invite.create', entityType: 'invite' },
+    ),
+  )
 
 export const validateInvite = createServerFn({ method: 'GET' })
   .validator(z.object({ token: z.string().uuid() }))
@@ -71,38 +80,49 @@ export const validateInvite = createServerFn({ method: 'GET' })
 
 export const consumeInvite = createServerFn({ method: 'POST' })
   .validator(z.object({ token: z.string().uuid() }))
-  .handler(async ({ data }) => {
-    const db = getDb()
+  .handler(
+    withAuditLogPublic<{ token: string }, { role: string; cooperativeId: string | null; email: string }>(
+      async ({ data }: { data: { token: string } }) => {
+        const db = getDb()
 
-    const [invite] = await db
-      .select()
-      .from(invites)
-      .where(eq(invites.token, data.token))
-      .limit(1)
+        const [invite] = await db
+          .select()
+          .from(invites)
+          .where(eq(invites.token, data.token))
+          .limit(1)
 
-    if (!invite) {
-      throw new Error('Invite not found')
-    }
+        if (!invite) {
+          throw new Error('Invite not found')
+        }
 
-    if (invite.usedAt) {
-      throw new Error('Invite already used')
-    }
+        if (invite.usedAt) {
+          throw new Error('Invite already used')
+        }
 
-    if (new Date() > new Date(invite.expiresAt)) {
-      throw new Error('Invite has expired')
-    }
+        if (new Date() > new Date(invite.expiresAt)) {
+          throw new Error('Invite has expired')
+        }
 
-    await db
-      .update(invites)
-      .set({ usedAt: new Date() })
-      .where(eq(invites.id, invite.id))
+        await db
+          .update(invites)
+          .set({ usedAt: new Date() })
+          .where(eq(invites.id, invite.id))
 
-    return {
-      role: invite.role,
-      cooperativeId: invite.cooperativeId,
-      email: invite.email,
-    }
-  })
+        return {
+          role: invite.role,
+          cooperativeId: invite.cooperativeId,
+          email: invite.email,
+        }
+      },
+      {
+        action: 'invite.consume',
+        entityType: 'invite',
+        publicContext: { userId: 'public', email: 'public@invite', name: 'Public Invite', role: 'public' },
+        getEntityId: (r) => (r as { token?: string } | undefined)?.token,
+        getDetails: (d) => ({ token: (d as { token: string }).token }),
+      },
+    ),
+  )
 
 export const fetchInvites = createServerFn({ method: 'GET' })
   .middleware([authMiddleware])
@@ -128,7 +148,16 @@ export const fetchInvites = createServerFn({ method: 'GET' })
 export const deleteInvite = createServerFn({ method: 'POST' })
   .validator(z.object({ id: z.string().uuid() }))
   .middleware([requireRole(['admin', 'manager'])])
-  .handler(async ({ data }) => {
-    const db = getDb()
-    await db.delete(invites).where(eq(invites.id, data.id))
-  })
+  .handler(
+    withAuditLog<{ id: string }, void>(
+      async ({ data }: { data: { id: string }; context: AuditContext }) => {
+        const db = getDb()
+        await db.delete(invites).where(eq(invites.id, data.id))
+      },
+      {
+        action: 'invite.delete',
+        entityType: 'invite',
+        getEntityId: (_, d) => (d as { id: string }).id,
+      },
+    ),
+  )
