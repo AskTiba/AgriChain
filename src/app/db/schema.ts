@@ -17,6 +17,7 @@ export const harvestEntries = pgTable('harvest_entries', {
   fieldId: text('field_id').notNull(),
   createdBy: uuid('created_by').references(() => users.id),
   warehouseId: uuid('warehouse_id').references(() => warehouses.id),
+  cooperativeId: uuid('cooperative_id').references(() => cooperatives.id),
   timestamp: timestamp('timestamp', { withTimezone: true }).notNull().defaultNow(),
 })
 
@@ -25,6 +26,7 @@ export const orders = pgTable('orders', {
   orderNumber: text('order_number').notNull().unique(),
   harvestId: uuid('harvest_id').references(() => harvestEntries.id),
   buyerId: uuid('buyer_id').references(() => users.id),
+  cooperativeId: uuid('cooperative_id').references(() => cooperatives.id),
   quantity: integer('quantity').notNull(),
   status: text('status', { enum: ['pending', 'confirmed', 'in-transit', 'delivered'] })
     .notNull()
@@ -46,6 +48,7 @@ export const vehicles = pgTable('vehicles', {
   status: text('status', { enum: ['available', 'in-use', 'maintenance'] })
     .notNull()
     .default('available'),
+  cooperativeId: uuid('cooperative_id').references(() => cooperatives.id),
 })
 
 export const assignments = pgTable('assignments', {
@@ -54,6 +57,7 @@ export const assignments = pgTable('assignments', {
   vehicleId: uuid('vehicle_id').references(() => vehicles.id),
   driverName: text('driver_name').notNull(),
   destination: text('destination').notNull(),
+  cooperativeId: uuid('cooperative_id').references(() => cooperatives.id),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 })
 

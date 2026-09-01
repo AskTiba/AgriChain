@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { resolveUserCooperative, filterByCooperative } from '../cooperative-isolation'
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres'
 import type * as schema from '~/app/db/schema'
+import { harvestEntries } from '~/app/db/schema'
 
 function createMockDb(user: { id: string; cooperativeId: string | null } | null = null) {
   const selectChain = {
@@ -52,9 +53,16 @@ describe('cooperative-isolation', () => {
       expect(query.where).not.toHaveBeenCalled()
     })
 
-    it('applies where clause when cooperativeId is provided', () => {
-      const query = { where: vi.fn().mockReturnValue({}) }
+    it('returns original query when column is not provided', () => {
+      const query = { where: vi.fn() }
       const result = filterByCooperative(query, 'coop-123')
+      expect(result).toBe(query)
+      expect(query.where).not.toHaveBeenCalled()
+    })
+
+    it('applies where clause when cooperativeId and column are provided', () => {
+      const query = { where: vi.fn().mockReturnValue({}) }
+      const result = filterByCooperative(query, 'coop-123', harvestEntries.cooperativeId)
       expect(query.where).toHaveBeenCalled()
       expect(result).toBeDefined()
     })

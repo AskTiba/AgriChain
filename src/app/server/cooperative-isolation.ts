@@ -2,6 +2,7 @@ import { eq } from 'drizzle-orm'
 import { users } from '~/app/db/schema'
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres'
 import type * as schema from '~/app/db/schema'
+import type { PgColumn } from 'drizzle-orm/pg-core'
 
 export async function resolveUserCooperative(
   userId: string,
@@ -20,7 +21,8 @@ export async function resolveUserCooperative(
 export function filterByCooperative<T extends { where: (clause: unknown) => T }>(
   query: T,
   cooperativeId: string | null,
+  column?: PgColumn,
 ): T {
-  if (!cooperativeId) return query
-  return query.where(eq(users.cooperativeId, cooperativeId))
+  if (!cooperativeId || !column) return query
+  return query.where(eq(column, cooperativeId))
 }
