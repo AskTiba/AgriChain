@@ -11,6 +11,15 @@ function createMockDb() {
   return {} as unknown as NodePgDatabase<typeof schema>
 }
 
+const mockSession = {
+  session: {
+    userId: 'user-1',
+    email: 'user@example.com',
+    name: 'Test User',
+    role: 'buyer',
+  },
+}
+
 describe('audit-middleware', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -25,7 +34,7 @@ describe('audit-middleware', () => {
 
     const result = await wrapped({
       data: {},
-      context: { session: { userId: 'user-1' } },
+      context: mockSession,
     })
 
     expect(handler).toHaveBeenCalled()
@@ -39,7 +48,7 @@ describe('audit-middleware', () => {
       entityType: 'order',
     })
 
-    const args = { data: { harvestId: 'h-1' }, context: { session: { userId: 'user-1' } } }
+    const args = { data: { harvestId: 'h-1' }, context: mockSession }
     await wrapped(args)
 
     expect(handler).toHaveBeenCalledWith(args)
@@ -57,7 +66,7 @@ describe('audit-middleware', () => {
 
     const result = await wrapped({
       data: {},
-      context: { session: { userId: 'user-1' } },
+      context: mockSession,
     })
 
     expect(result).toEqual({ id: 'order-123' })

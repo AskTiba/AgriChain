@@ -3,9 +3,10 @@ import { z } from 'zod'
 import { getDb } from '~/app/db'
 import { cooperatives, users } from '~/app/db/schema'
 import { desc, eq, isNull } from 'drizzle-orm'
-import { requireRole } from './auth-middleware'
+import { requireRole, authMiddleware } from './auth-middleware'
 
 export const fetchCooperatives = createServerFn({ method: 'GET' })
+  .middleware([authMiddleware])
   .handler(async () => {
     const db = getDb()
     return await db.select().from(cooperatives).orderBy(desc(cooperatives.createdAt))
@@ -13,6 +14,7 @@ export const fetchCooperatives = createServerFn({ method: 'GET' })
 
 export const fetchCooperative = createServerFn({ method: 'GET' })
   .validator(z.object({ id: z.string().uuid() }))
+  .middleware([authMiddleware])
   .handler(async ({ data }) => {
     const db = getDb()
     const results = await db.select().from(cooperatives).where(eq(cooperatives.id, data.id)).limit(1)
@@ -50,6 +52,7 @@ export const assignUserToCooperative = createServerFn({ method: 'POST' })
 
 export const fetchUsersByCooperative = createServerFn({ method: 'GET' })
   .validator(z.object({ cooperativeId: z.string().uuid() }))
+  .middleware([authMiddleware])
   .handler(async ({ data }) => {
     const db = getDb()
     return await db
@@ -87,6 +90,7 @@ export const completeOnboarding = createServerFn({ method: 'POST' })
   })
 
 export const fetchUnassignedUsers = createServerFn({ method: 'GET' })
+  .middleware([authMiddleware])
   .handler(async () => {
     const db = getDb()
     return await db

@@ -3,7 +3,7 @@ import { z } from 'zod'
 import { getDb } from '~/app/db'
 import { assignments } from '~/app/db/schema'
 import { desc, eq } from 'drizzle-orm'
-import { requireRole } from './auth-middleware'
+import { requireRole, authMiddleware } from './auth-middleware'
 
 const AssignmentInputSchema = z.object({
   harvestId: z.string().uuid(),
@@ -13,6 +13,7 @@ const AssignmentInputSchema = z.object({
 })
 
 export const fetchAssignments = createServerFn({ method: 'GET' })
+  .middleware([authMiddleware])
   .handler(async () => {
     const db = getDb()
     return await db.select().from(assignments).orderBy(desc(assignments.createdAt))

@@ -3,7 +3,7 @@ import { z } from 'zod'
 import { getDb } from '~/app/db'
 import { invites, users } from '~/app/db/schema'
 import { eq, and, gt, isNull, desc } from 'drizzle-orm'
-import { requireRole } from './auth-middleware'
+import { requireRole, authMiddleware } from './auth-middleware'
 
 const EXPIRY_DAYS = 7
 
@@ -105,6 +105,7 @@ export const consumeInvite = createServerFn({ method: 'POST' })
   })
 
 export const fetchInvites = createServerFn({ method: 'GET' })
+  .middleware([authMiddleware])
   .handler(async () => {
     const db = getDb()
     return await db

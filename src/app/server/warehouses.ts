@@ -1,6 +1,6 @@
 import { createServerFn } from '@tanstack/react-start'
 import { z } from 'zod'
-import { requireRole } from './auth-middleware'
+import { requireRole, authMiddleware } from './auth-middleware'
 import { createWarehouse, fetchWarehousesWithCapacity, assignHarvestToWarehouse } from './warehouse-service'
 
 const CreateWarehouseSchema = z.object({
@@ -11,6 +11,7 @@ const CreateWarehouseSchema = z.object({
 })
 
 export const fetchWarehouses = createServerFn({ method: 'GET' })
+  .middleware([authMiddleware])
   .handler(async () => {
     return fetchWarehousesWithCapacity()
   })

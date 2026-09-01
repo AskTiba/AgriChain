@@ -3,7 +3,7 @@ import { z } from 'zod'
 import { getDb } from '~/app/db'
 import { harvestEntries } from '~/app/db/schema'
 import { desc, eq } from 'drizzle-orm'
-import { requireRole } from './auth-middleware'
+import { requireRole, authMiddleware } from './auth-middleware'
 
 const HarvestInputSchema = z.object({
   cropType: z.string().min(1),
@@ -13,6 +13,7 @@ const HarvestInputSchema = z.object({
 })
 
 export const fetchHarvests = createServerFn({ method: 'GET' })
+  .middleware([authMiddleware])
   .handler(async () => {
     const db = getDb()
     return await db.select().from(harvestEntries).orderBy(desc(harvestEntries.timestamp))

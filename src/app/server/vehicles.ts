@@ -3,7 +3,7 @@ import { z } from 'zod'
 import { getDb } from '~/app/db'
 import { vehicles } from '~/app/db/schema'
 import { desc, eq } from 'drizzle-orm'
-import { requireRole } from './auth-middleware'
+import { requireRole, authMiddleware } from './auth-middleware'
 
 const VehicleInputSchema = z.object({
   name: z.string().min(1),
@@ -13,6 +13,7 @@ const VehicleInputSchema = z.object({
 })
 
 export const fetchVehicles = createServerFn({ method: 'GET' })
+  .middleware([authMiddleware])
   .handler(async () => {
     const db = getDb()
     return await db.select().from(vehicles).orderBy(desc(vehicles.name))

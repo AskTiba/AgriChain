@@ -22,6 +22,7 @@ async function notifyManagers(db: ReturnType<typeof getDb>, message: string, ord
 }
 
 export const fetchOrders = createServerFn({ method: 'GET' })
+  .middleware([authMiddleware])
   .handler(async () => {
     const db = getDb()
     return await db.select().from(orders).orderBy(desc(orders.createdAt))
@@ -29,6 +30,7 @@ export const fetchOrders = createServerFn({ method: 'GET' })
 
 export const fetchOrdersByBuyer = createServerFn({ method: 'GET' })
   .validator(z.object({ buyerId: z.string().uuid() }))
+  .middleware([authMiddleware])
   .handler(async ({ data }) => {
     const db = getDb()
     return await db
@@ -40,6 +42,7 @@ export const fetchOrdersByBuyer = createServerFn({ method: 'GET' })
 
 export const fetchOrderByOrderNumber = createServerFn({ method: 'GET' })
   .validator(z.object({ orderNumber: z.string() }))
+  .middleware([authMiddleware])
   .handler(async ({ data }) => {
     const db = getDb()
     const results = await db
