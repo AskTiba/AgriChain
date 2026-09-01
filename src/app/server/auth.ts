@@ -6,8 +6,13 @@ import { users, sessions, harvestEntries, orders, notifications, invites } from 
 import { eq, and, gt, isNull } from 'drizzle-orm'
 import { useAppSession } from './session'
 import { resolveCurrentUser } from './auth-resilience'
+import { rateLimitMiddleware } from './rate-limit-middleware'
 
 const SALT_ROUNDS = 12
+
+const loginRateLimit = rateLimitMiddleware('auth.login', { windowMs: 60_000, maxRequests: 10 })
+const registerRateLimit = rateLimitMiddleware('auth.register', { windowMs: 60_000, maxRequests: 5 })
+const inviteRegisterRateLimit = rateLimitMiddleware('auth.inviteRegister', { windowMs: 60_000, maxRequests: 10 })
 
 const RegisterInputSchema = z.object({
   email: z.string().email(),
@@ -29,6 +34,7 @@ const LoginInputSchema = z.object({
 
 export const register = createServerFn({ method: 'POST' })
   .validator(RegisterInputSchema)
+  .middleware([registerRateLimit])
   .handler(async ({ data }) => {
     try {
       const db = getDb()
@@ -68,6 +74,7 @@ export const register = createServerFn({ method: 'POST' })
 
 export const inviteRegister = createServerFn({ method: 'POST' })
   .validator(InviteRegisterInputSchema)
+  .middleware([inviteRegisterRateLimit])
   .handler(async ({ data }) => {
     try {
       const db = getDb()
@@ -141,6 +148,7 @@ export const inviteRegister = createServerFn({ method: 'POST' })
 
 export const login = createServerFn({ method: 'POST' })
   .validator(LoginInputSchema)
+  .middleware([loginRateLimit])
   .handler(async ({ data }) => {
     try {
       const db = getDb()

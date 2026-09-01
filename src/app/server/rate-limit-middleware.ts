@@ -1,4 +1,6 @@
 import { RateLimiter } from './rate-limiter'
+import { createMiddleware } from '@tanstack/react-start'
+import { getRequest } from '@tanstack/react-start/server'
 
 const endpointLimiters = new Map<string, RateLimiter>()
 
@@ -36,4 +38,13 @@ export function assertRateLimit(endpoint: string, request: Request, options: Rat
   if (!result.allowed) {
     throw new Error(`Too many requests. Please try again in ${result.retryAfter}s`)
   }
+}
+
+export function rateLimitMiddleware(endpoint: string, options: RateLimitOptions) {
+  return createMiddleware({ type: 'function' }).server(
+    async ({ next }) => {
+      assertRateLimit(endpoint, getRequest(), options)
+      return next({})
+    },
+  )
 }

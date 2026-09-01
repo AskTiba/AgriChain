@@ -1,5 +1,13 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { checkRateLimit } from '../rate-limit-middleware'
+import { checkRateLimit, assertRateLimit } from '../rate-limit-middleware'
+
+function mockRequest(ip: string): Request {
+  return {
+    headers: {
+      get: (name: string) => (name.toLowerCase() === 'x-forwarded-for' ? ip : null),
+    },
+  } as unknown as Request
+}
 
 describe('rate-limit-middleware', () => {
   beforeEach(() => {
@@ -45,6 +53,36 @@ describe('rate-limit-middleware', () => {
       vi.advanceTimersByTime(1001)
       const result = checkRateLimit('auth.login.reset', '1.2.3.4', { windowMs: 1000, maxRequests: 1 })
       expect(result.allowed).toBe(true)
+    })
+  })
+
+  describe('assertRateLimit', () => {
+    it('passes through when within limit', () => {
+      const request = mockRequest('203.0.113.9')
+      expect(() =>
+        assertRateLimit('auth.login.assert-ok', request, { windowMs: 60000, maxRequests: 2 }),
+      ).not.toThrow()
+      expect(() =>
+        assertRateLimit('auth.login.assert-ok', request, { windowMs: 60000, maxRequests: 2 }),
+      ).not.toThrow()
+    })
+
+    it('throws when limit exceeded', () => {
+      const request = mockRequest('203.0.113.10')
+      assertRateLimit('auth.login.assert-block', request, { windowMs: 60000, maxRequests: 2 })
+      assertRateLimit('auth.login.assert-block', request, { windowMs: 60000, maxRequests: 2 })
+      expect(() =>
+        assertRateLimit('auth.login.assert-block', request, { windowMs: 60000, maxRequests: 2 }),
+      ).toThrow(/Too many requests/)
+    })
+
+    it('extracts client IP from x-forwarded-for', () => {
+      const request = mockRequest('198.51.100.7')
+      assertRateLimit('auth.login.assert-ip', request, { windowMs: 60000, maxRequests: 1 })
+      const other = mockRequest('198.51.100.8')
+      expect(() =>
+        assertRateLimit('auth.login.assert-ip', other, { windowMs: 60000, maxRequests: 1 }),
+      ).not.toThrow()
     })
   })
 })
