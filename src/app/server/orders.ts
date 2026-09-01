@@ -1,11 +1,13 @@
 import { createServerFn } from '@tanstack/react-start'
 import { z } from 'zod'
 import { getDb } from '~/app/db'
-import { orders, notifications, users } from '~/app/db/schema'
+import { orders, notifications, users, type Order } from '~/app/db/schema'
 import { desc, eq, or } from 'drizzle-orm'
 import { authMiddleware, requireRole } from './auth-middleware'
+import { withAuditLog, type AuditContext } from './audit-middleware'
 
 const OrderStatusSchema = z.enum(['pending', 'confirmed', 'in-transit', 'delivered'])
+type OrderStatus = z.infer<typeof OrderStatusSchema>
 
 async function notifyUser(db: ReturnType<typeof getDb>, userId: string, type: 'order_placed' | 'order_confirmed' | 'driver_assigned' | 'status_changed', message: string, orderId?: string) {
   await db.insert(notifications).values({ userId, type, message, orderId })
@@ -61,108 +63,141 @@ export const addOrder = createServerFn({ method: 'POST' })
     })
   )
   .middleware([authMiddleware])
-  .handler(async ({ data, context }) => {
-    const db = getDb()
-    const maxOrder = await db
-      .select({ orderNumber: orders.orderNumber })
-      .from(orders)
-      .orderBy(desc(orders.orderNumber))
-      .limit(1)
+  .handler(
+    withAuditLog<{ harvestId: string; quantity: number }, Order>(
+      async ({ data, context }) => {
+        const db = getDb()
+        const maxOrder = await db
+          .select({ orderNumber: orders.orderNumber })
+          .from(orders)
+          .orderBy(desc(orders.orderNumber))
+          .limit(1)
 
-    let nextNumber = 1
-    if (maxOrder.length > 0) {
-      const match = maxOrder[0].orderNumber.match(/ORD-(\d+)/)
-      if (match) {
-        nextNumber = parseInt(match[1], 10) + 1
-      }
-    }
-    const orderNumber = `ORD-${String(nextNumber).padStart(6, '0')}`
+        let nextNumber = 1
+        if (maxOrder.length > 0) {
+          const match = maxOrder[0].orderNumber.match(/ORD-(\d+)/)
+          if (match) {
+            nextNumber = parseInt(match[1], 10) + 1
+          }
+        }
+        const orderNumber = `ORD-${String(nextNumber).padStart(6, '0')}`
 
-    const [newOrder] = await db
-      .insert(orders)
-      .values({
-        harvestId: data.harvestId,
-        buyerId: context.session.userId,
-        quantity: data.quantity,
-        orderNumber,
-      })
-      .returning()
+        const [newOrder] = await db
+          .insert(orders)
+          .values({
+            harvestId: data.harvestId,
+            buyerId: context.session.userId,
+            quantity: data.quantity,
+            orderNumber,
+          })
+          .returning()
 
-    await notifyManagers(db, `New order ${orderNumber} placed for ${data.quantity}kg`, newOrder.id)
+        await notifyManagers(db, `New order ${orderNumber} placed for ${data.quantity}kg`, newOrder.id)
 
-    return newOrder
-  })
+        return newOrder
+      },
+      { action: 'order.create', entityType: 'order' },
+    ),
+  )
 
 export const confirmOrder = createServerFn({ method: 'POST' })
   .validator(z.object({ id: z.string().uuid() }))
   .middleware([requireRole(['admin', 'manager'])])
-  .handler(async ({ data, context }) => {
-    const db = getDb()
-    const [updated] = await db
-      .update(orders)
-      .set({
-        status: 'confirmed',
-        confirmedBy: context.session.userId,
-        updatedAt: new Date(),
-      })
-      .where(eq(orders.id, data.id))
-      .returning()
-    if (!updated) throw new Error('Order not found')
+  .handler(
+    withAuditLog<{ id: string }, Order>(
+      async ({ data, context }: { data: { id: string }; context: AuditContext }) => {
+        const db = getDb()
+        const [updated] = await db
+          .update(orders)
+          .set({
+            status: 'confirmed',
+            confirmedBy: context.session.userId,
+            updatedAt: new Date(),
+          })
+          .where(eq(orders.id, data.id))
+          .returning()
+        if (!updated) throw new Error('Order not found')
 
-    if (updated.buyerId) {
-      await notifyUser(db, updated.buyerId, 'order_confirmed', `Order ${updated.orderNumber} has been confirmed`, updated.id)
-    }
+        if (updated.buyerId) {
+          await notifyUser(db, updated.buyerId, 'order_confirmed', `Order ${updated.orderNumber} has been confirmed`, updated.id)
+        }
 
-    return updated
-  })
+        return updated
+      },
+      { action: 'order.confirm', entityType: 'order' },
+    ),
+  )
 
 export const assignDriver = createServerFn({ method: 'POST' })
   .validator(z.object({ id: z.string().uuid(), driverId: z.string().uuid() }))
   .middleware([requireRole(['admin', 'manager'])])
-  .handler(async ({ data }) => {
-    const db = getDb()
-    const [updated] = await db
-      .update(orders)
-      .set({
-        assignedDriverId: data.driverId,
-        updatedAt: new Date(),
-      })
-      .where(eq(orders.id, data.id))
-      .returning()
-    if (!updated) throw new Error('Order not found')
+  .handler(
+    withAuditLog<{ id: string; driverId: string }, Order>(
+      async ({ data }: { data: { id: string; driverId: string }; context: AuditContext }) => {
+        const db = getDb()
+        const [updated] = await db
+          .update(orders)
+          .set({
+            assignedDriverId: data.driverId,
+            updatedAt: new Date(),
+          })
+          .where(eq(orders.id, data.id))
+          .returning()
+        if (!updated) throw new Error('Order not found')
 
-    if (updated.buyerId) {
-      await notifyUser(db, updated.buyerId, 'driver_assigned', `A driver has been assigned to order ${updated.orderNumber}`, updated.id)
-    }
-    await notifyUser(db, data.driverId, 'driver_assigned', `You have been assigned to order ${updated.orderNumber}`, updated.id)
+        if (updated.buyerId) {
+          await notifyUser(db, updated.buyerId, 'driver_assigned', `A driver has been assigned to order ${updated.orderNumber}`, updated.id)
+        }
+        await notifyUser(db, data.driverId, 'driver_assigned', `You have been assigned to order ${updated.orderNumber}`, updated.id)
 
-    return updated
-  })
+        return updated
+      },
+      { action: 'order.assign_driver', entityType: 'order' },
+    ),
+  )
 
 export const updateOrderStatus = createServerFn({ method: 'POST' })
   .validator(z.object({ id: z.string().uuid(), status: OrderStatusSchema }))
   .middleware([requireRole(['admin', 'manager', 'driver'])])
-  .handler(async ({ data }) => {
-    const db = getDb()
-    const [updated] = await db
-      .update(orders)
-      .set({ status: data.status, updatedAt: new Date() })
-      .where(eq(orders.id, data.id))
-      .returning()
-    if (!updated) throw new Error('Order not found')
+  .handler(
+    withAuditLog<{ id: string; status: OrderStatus }, Order>(
+      async ({ data }: { data: { id: string; status: OrderStatus }; context: AuditContext }) => {
+        const db = getDb()
+        const [updated] = await db
+          .update(orders)
+          .set({ status: data.status, updatedAt: new Date() })
+          .where(eq(orders.id, data.id))
+          .returning()
+        if (!updated) throw new Error('Order not found')
 
-    if (updated.buyerId) {
-      const statusLabel = data.status === 'in-transit' ? 'in transit' : data.status
-      await notifyUser(db, updated.buyerId, 'status_changed', `Order ${updated.orderNumber} is now ${statusLabel}`, updated.id)
-    }
+        if (updated.buyerId) {
+          const statusLabel = data.status === 'in-transit' ? 'in transit' : data.status
+          await notifyUser(db, updated.buyerId, 'status_changed', `Order ${updated.orderNumber} is now ${statusLabel}`, updated.id)
+        }
 
-    return updated
-  })
+        return updated
+      },
+      {
+        action: 'order.update_status',
+        entityType: 'order',
+        getDetails: (d) => ({ status: (d as { status: string }).status }),
+      },
+    ),
+  )
 
 export const deleteOrder = createServerFn({ method: 'POST' })
   .validator(z.object({ id: z.string().uuid() }))
   .middleware([requireRole(['admin'])])
-  .handler(async ({ data }) => {
-    const db = getDb()
-    await db.delete(orders).where(eq(orders.id, data.id))
-  })
+  .handler(
+    withAuditLog<{ id: string }, void>(
+      async ({ data }: { data: { id: string }; context: AuditContext }) => {
+        const db = getDb()
+        await db.delete(orders).where(eq(orders.id, data.id))
+      },
+      {
+        action: 'order.delete',
+        entityType: 'order',
+        getEntityId: (_, d) => (d as { id: string }).id,
+      },
+    ),
+  )

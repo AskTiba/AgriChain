@@ -2,7 +2,7 @@ import { createAuditLog } from './audit-service'
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres'
 import type * as schema from '~/app/db/schema'
 
-interface AuditContext {
+export interface AuditContext {
   session: {
     userId: string
     email: string
@@ -11,10 +11,10 @@ interface AuditContext {
   }
 }
 
-interface WithAuditLogOptions {
+export interface WithAuditLogOptions {
   action: string
   entityType: string
-  getEntityId?: (result: unknown) => string | undefined
+  getEntityId?: (result: unknown, data: unknown) => string | undefined
   getDetails?: (data: unknown) => Record<string, unknown>
 }
 
@@ -26,7 +26,7 @@ export function withAuditLog<TInput, TResult>(
     const result = await handler(args)
 
     try {
-      const entityId = options.getEntityId?.(result) ?? (result as Record<string, unknown>)?.id as string | undefined
+      const entityId = options.getEntityId?.(result, args.data) ?? (result as Record<string, unknown>)?.id as string | undefined
       const details = options.getDetails?.(args.data) ?? (args.data as Record<string, unknown>)
 
       await createAuditLog({

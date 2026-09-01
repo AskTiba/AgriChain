@@ -71,4 +71,42 @@ describe('audit-middleware', () => {
 
     expect(result).toEqual({ id: 'order-123' })
   })
+
+  it('derives entityId from input data when result has no id', async () => {
+    const { createAuditLog } = await import('../audit-service')
+    const handler = vi.fn().mockResolvedValue(undefined)
+    const wrapped = withAuditLog(handler, {
+      action: 'order.delete',
+      entityType: 'order',
+      getEntityId: (_, data) => (data as { id: string }).id,
+    })
+
+    await wrapped({
+      data: { id: 'order-456' },
+      context: mockSession,
+    })
+
+    expect(createAuditLog).toHaveBeenCalledWith(
+      expect.objectContaining({ entityId: 'order-456', action: 'order.delete' }),
+    )
+  })
+
+  it('passes details from custom getDetails', async () => {
+    const { createAuditLog } = await import('../audit-service')
+    const handler = vi.fn().mockResolvedValue({ id: 'order-123' })
+    const wrapped = withAuditLog(handler, {
+      action: 'order.status_change',
+      entityType: 'order',
+      getDetails: (data) => ({ status: (data as { status: string }).status }),
+    })
+
+    await wrapped({
+      data: { id: 'order-123', status: 'confirmed' },
+      context: mockSession,
+    })
+
+    expect(createAuditLog).toHaveBeenCalledWith(
+      expect.objectContaining({ details: { status: 'confirmed' } }),
+    )
+  })
 })
