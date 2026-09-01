@@ -8,10 +8,10 @@ Items scheduled for future sprints. Organized by priority.
 
 | # | Feature | Description | Sprint |
 |---|---------|-------------|--------|
-| 1 | **Audit logging** | Track all sensitive operations (role changes, order mutations, user deletions) with timestamp, user, action, and affected record | TBD |
-| 2 | **Cooperative data isolation** | Server-side filtering by `cooperative_id` on all queries — users only see their cooperative's data | TBD |
-| 3 | **Rate limiting** | Protect login/register endpoints from brute-force attacks (e.g. 5 attempts per minute per IP) | TBD |
-| 4 | **CSRF tokens** | Add explicit CSRF protection for state-changing operations beyond SameSite cookie | TBD |
+| 1 | **Audit logging** | Track all sensitive operations (role changes, order mutations, user deletions) with timestamp, user, action, and affected record | ✅ Sprint 16 |
+| 2 | **Cooperative data isolation** | Server-side filtering by `cooperative_id` on all queries — users only see their cooperative's data | ✅ Sprint 16 |
+| 3 | **Rate limiting** | Protect login/register endpoints from brute-force attacks (e.g. 5 attempts per minute per IP) | ✅ Sprint 16 |
+| 4 | **CSRF tokens** | Add explicit CSRF protection for state-changing operations beyond SameSite cookie | ✅ Sprint 16 |
 
 ### Medium Priority
 
@@ -45,6 +45,7 @@ Items scheduled for future sprints. Organized by priority.
 | 13 | Vercel deployment config | ✅ Done |
 | 14 | Delete account + idempotent seed | ✅ Done |
 | 15 | RBAC + invitation system | ✅ Done |
+| 16 | Security hardening (audit, rate limit, CSRF, isolation) | ✅ Done |
 
 ---
 
