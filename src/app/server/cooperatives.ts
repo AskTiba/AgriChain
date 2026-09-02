@@ -5,21 +5,31 @@ import { cooperatives, users, type Cooperative } from '~/app/db/schema'
 import { desc, eq, isNull } from 'drizzle-orm'
 import { requireRole, authMiddleware } from './auth-middleware'
 import { withAuditLog, type AuditContext } from './audit-middleware'
+import { resolveUserCooperative } from './cooperative-isolation'
 
 export const fetchCooperatives = createServerFn({ method: 'GET' })
   .middleware([authMiddleware])
-  .handler(async () => {
+  .handler(async ({ context }) => {
     const db = getDb()
-    return await db.select().from(cooperatives).orderBy(desc(cooperatives.createdAt))
+    const cooperativeId = await resolveUserCooperative(context.session.userId)
+    const query = db.select().from(cooperatives).orderBy(desc(cooperatives.createdAt))
+    if (cooperativeId) {
+      return await query.where(eq(cooperatives.id, cooperativeId))
+    }
+    return await query
   })
 
 export const fetchCooperative = createServerFn({ method: 'GET' })
   .validator(z.object({ id: z.string().uuid() }))
   .middleware([authMiddleware])
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
     const db = getDb()
-    const results = await db.select().from(cooperatives).where(eq(cooperatives.id, data.id)).limit(1)
-    return results[0] ?? undefined
+    const cooperativeId = await resolveUserCooperative(context.session.userId)
+    const query = db.select().from(cooperatives).where(eq(cooperatives.id, data.id)).limit(1)
+    if (cooperativeId && cooperativeId !== data.id) {
+      return undefined
+    }
+    return (await query)[0] ?? undefined
   })
 
 export const createCooperative = createServerFn({ method: 'POST' })

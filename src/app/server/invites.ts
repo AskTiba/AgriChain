@@ -5,6 +5,7 @@ import { invites, users, type Invite } from '~/app/db/schema'
 import { eq, and, gt, isNull, desc } from 'drizzle-orm'
 import { requireRole, authMiddleware } from './auth-middleware'
 import { withAuditLog, withAuditLogPublic, type AuditContext, type PublicAuditContext } from './audit-middleware'
+import { resolveUserCooperative } from './cooperative-isolation'
 
 const EXPIRY_DAYS = 7
 
@@ -126,9 +127,10 @@ export const consumeInvite = createServerFn({ method: 'POST' })
 
 export const fetchInvites = createServerFn({ method: 'GET' })
   .middleware([authMiddleware])
-  .handler(async () => {
+  .handler(async ({ context }) => {
     const db = getDb()
-    return await db
+    const cooperativeId = await resolveUserCooperative(context.session.userId)
+    const query = db
       .select({
         id: invites.id,
         email: invites.email,
@@ -143,6 +145,10 @@ export const fetchInvites = createServerFn({ method: 'GET' })
       .from(invites)
       .leftJoin(users, eq(invites.createdBy, users.id))
       .orderBy(desc(invites.createdAt))
+    if (cooperativeId) {
+      return await query.where(eq(invites.cooperativeId, cooperativeId))
+    }
+    return await query
   })
 
 export const deleteInvite = createServerFn({ method: 'POST' })

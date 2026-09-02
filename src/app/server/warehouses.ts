@@ -1,9 +1,12 @@
 import { createServerFn } from '@tanstack/react-start'
 import { z } from 'zod'
+import { getDb } from '~/app/db'
 import { requireRole, authMiddleware } from './auth-middleware'
 import { createWarehouse, fetchWarehousesWithCapacity, assignHarvestToWarehouse } from './warehouse-service'
-import { type Warehouse, type HarvestEntry } from '~/app/db/schema'
+import { type Warehouse, type HarvestEntry, warehouses } from '~/app/db/schema'
+import { desc, eq, and } from 'drizzle-orm'
 import { withAuditLog, type AuditContext } from './audit-middleware'
+import { resolveUserCooperative } from './cooperative-isolation'
 
 const CreateWarehouseSchema = z.object({
   name: z.string().min(1),
@@ -14,8 +17,10 @@ const CreateWarehouseSchema = z.object({
 
 export const fetchWarehouses = createServerFn({ method: 'GET' })
   .middleware([authMiddleware])
-  .handler(async () => {
-    return fetchWarehousesWithCapacity()
+  .handler(async ({ context }) => {
+    const db = getDb()
+    const cooperativeId = await resolveUserCooperative(context.session.userId)
+    return fetchWarehousesWithCapacity(db, cooperativeId)
   })
 
 export const addWarehouse = createServerFn({ method: 'POST' })
@@ -24,7 +29,9 @@ export const addWarehouse = createServerFn({ method: 'POST' })
   .handler(
     withAuditLog<z.infer<typeof CreateWarehouseSchema>, Warehouse>(
       async ({ data, context }: { data: z.infer<typeof CreateWarehouseSchema>; context: AuditContext }) => {
-        return createWarehouse(data)
+        const db = getDb()
+        const cooperativeId = await resolveUserCooperative(context.session.userId)
+        return createWarehouse({ ...data, cooperativeId }, db)
       },
       { action: 'warehouse.create', entityType: 'warehouse' },
     ),

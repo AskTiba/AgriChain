@@ -26,8 +26,9 @@ export async function createWarehouse(
 
 export async function fetchWarehousesWithCapacity(
   db: NodePgDatabase<typeof schema> = getDb(),
+  cooperativeId?: string | null,
 ) {
-  const rows = await db
+  const query = db
     .select({
       id: warehouses.id,
       name: warehouses.name,
@@ -41,7 +42,10 @@ export async function fetchWarehousesWithCapacity(
     .leftJoin(harvestEntries, eq(warehouses.id, harvestEntries.warehouseId))
     .groupBy(warehouses.id)
 
-  return rows
+  if (cooperativeId) {
+    return await query.where(eq(warehouses.cooperativeId, cooperativeId))
+  }
+  return await query
 }
 
 export async function assignHarvestToWarehouse(
