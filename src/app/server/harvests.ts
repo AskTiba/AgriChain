@@ -2,9 +2,10 @@ import { createServerFn } from '@tanstack/react-start'
 import { z } from 'zod'
 import { getDb } from '~/app/db'
 import { harvestEntries, type HarvestEntry } from '~/app/db/schema'
-import { desc, eq } from 'drizzle-orm'
+import { desc, eq, and } from 'drizzle-orm'
 import { requireRole, authMiddleware } from './auth-middleware'
 import { withAuditLog, type AuditContext } from './audit-middleware'
+import { resolveUserCooperative } from './cooperative-isolation'
 
 const HarvestInputSchema = z.object({
   cropType: z.string().min(1),
@@ -15,9 +16,14 @@ const HarvestInputSchema = z.object({
 
 export const fetchHarvests = createServerFn({ method: 'GET' })
   .middleware([authMiddleware])
-  .handler(async () => {
+  .handler(async ({ context }) => {
     const db = getDb()
-    return await db.select().from(harvestEntries).orderBy(desc(harvestEntries.timestamp))
+    const cooperativeId = await resolveUserCooperative(context.session.userId)
+    const query = db.select().from(harvestEntries).orderBy(desc(harvestEntries.timestamp))
+    if (cooperativeId) {
+      return await query.where(eq(harvestEntries.cooperativeId, cooperativeId))
+    }
+    return await query
   })
 
 export const addHarvest = createServerFn({ method: 'POST' })
@@ -27,9 +33,10 @@ export const addHarvest = createServerFn({ method: 'POST' })
     withAuditLog<z.infer<typeof HarvestInputSchema>, HarvestEntry>(
       async ({ data, context }: { data: z.infer<typeof HarvestInputSchema>; context: AuditContext }) => {
         const db = getDb()
+        const cooperativeId = await resolveUserCooperative(context.session.userId)
         const [newEntry] = await db
           .insert(harvestEntries)
-          .values({ ...data, createdBy: context.session.userId })
+          .values({ ...data, createdBy: context.session.userId, cooperativeId })
           .returning()
         return newEntry
       },
@@ -42,9 +49,13 @@ export const deleteHarvest = createServerFn({ method: 'POST' })
   .middleware([requireRole(['admin'])])
   .handler(
     withAuditLog<{ id: string }, void>(
-      async ({ data }: { data: { id: string }; context: AuditContext }) => {
+      async ({ data, context }: { data: { id: string }; context: AuditContext }) => {
         const db = getDb()
-        await db.delete(harvestEntries).where(eq(harvestEntries.id, data.id))
+        const cooperativeId = await resolveUserCooperative(context.session.userId)
+        const whereClause = cooperativeId
+          ? and(eq(harvestEntries.id, data.id), eq(harvestEntries.cooperativeId, cooperativeId))
+          : eq(harvestEntries.id, data.id)
+        await db.delete(harvestEntries).where(whereClause)
       },
       {
         action: 'harvest.delete',

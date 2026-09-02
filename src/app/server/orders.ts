@@ -2,9 +2,10 @@ import { createServerFn } from '@tanstack/react-start'
 import { z } from 'zod'
 import { getDb } from '~/app/db'
 import { orders, notifications, users, type Order } from '~/app/db/schema'
-import { desc, eq, or } from 'drizzle-orm'
+import { desc, eq, or, and } from 'drizzle-orm'
 import { authMiddleware, requireRole } from './auth-middleware'
 import { withAuditLog, type AuditContext } from './audit-middleware'
+import { resolveUserCooperative } from './cooperative-isolation'
 
 const OrderStatusSchema = z.enum(['pending', 'confirmed', 'in-transit', 'delivered'])
 type OrderStatus = z.infer<typeof OrderStatusSchema>
@@ -25,32 +26,45 @@ async function notifyManagers(db: ReturnType<typeof getDb>, message: string, ord
 
 export const fetchOrders = createServerFn({ method: 'GET' })
   .middleware([authMiddleware])
-  .handler(async () => {
+  .handler(async ({ context }) => {
     const db = getDb()
-    return await db.select().from(orders).orderBy(desc(orders.createdAt))
+    const cooperativeId = await resolveUserCooperative(context.session.userId)
+    const query = db.select().from(orders).orderBy(desc(orders.createdAt))
+    if (cooperativeId) {
+      return await query.where(eq(orders.cooperativeId, cooperativeId))
+    }
+    return await query
   })
 
 export const fetchOrdersByBuyer = createServerFn({ method: 'GET' })
   .validator(z.object({ buyerId: z.string().uuid() }))
   .middleware([authMiddleware])
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
     const db = getDb()
+    const cooperativeId = await resolveUserCooperative(context.session.userId)
+    const whereClause = cooperativeId
+      ? and(eq(orders.buyerId, data.buyerId), eq(orders.cooperativeId, cooperativeId))
+      : eq(orders.buyerId, data.buyerId)
     return await db
       .select()
       .from(orders)
-      .where(eq(orders.buyerId, data.buyerId))
+      .where(whereClause)
       .orderBy(desc(orders.createdAt))
   })
 
 export const fetchOrderByOrderNumber = createServerFn({ method: 'GET' })
   .validator(z.object({ orderNumber: z.string() }))
   .middleware([authMiddleware])
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
     const db = getDb()
+    const cooperativeId = await resolveUserCooperative(context.session.userId)
+    const whereClause = cooperativeId
+      ? and(eq(orders.orderNumber, data.orderNumber), eq(orders.cooperativeId, cooperativeId))
+      : eq(orders.orderNumber, data.orderNumber)
     const results = await db
       .select()
       .from(orders)
-      .where(eq(orders.orderNumber, data.orderNumber))
+      .where(whereClause)
       .limit(1)
     return results[0] ?? undefined
   })
@@ -67,6 +81,7 @@ export const addOrder = createServerFn({ method: 'POST' })
     withAuditLog<{ harvestId: string; quantity: number }, Order>(
       async ({ data, context }) => {
         const db = getDb()
+        const cooperativeId = await resolveUserCooperative(context.session.userId)
         const maxOrder = await db
           .select({ orderNumber: orders.orderNumber })
           .from(orders)
@@ -87,6 +102,7 @@ export const addOrder = createServerFn({ method: 'POST' })
           .values({
             harvestId: data.harvestId,
             buyerId: context.session.userId,
+            cooperativeId,
             quantity: data.quantity,
             orderNumber,
           })
@@ -107,6 +123,10 @@ export const confirmOrder = createServerFn({ method: 'POST' })
     withAuditLog<{ id: string }, Order>(
       async ({ data, context }: { data: { id: string }; context: AuditContext }) => {
         const db = getDb()
+        const cooperativeId = await resolveUserCooperative(context.session.userId)
+        const whereClause = cooperativeId
+          ? and(eq(orders.id, data.id), eq(orders.cooperativeId, cooperativeId))
+          : eq(orders.id, data.id)
         const [updated] = await db
           .update(orders)
           .set({
@@ -114,7 +134,7 @@ export const confirmOrder = createServerFn({ method: 'POST' })
             confirmedBy: context.session.userId,
             updatedAt: new Date(),
           })
-          .where(eq(orders.id, data.id))
+          .where(whereClause)
           .returning()
         if (!updated) throw new Error('Order not found')
 
@@ -133,15 +153,19 @@ export const assignDriver = createServerFn({ method: 'POST' })
   .middleware([requireRole(['admin', 'manager'])])
   .handler(
     withAuditLog<{ id: string; driverId: string }, Order>(
-      async ({ data }: { data: { id: string; driverId: string }; context: AuditContext }) => {
+      async ({ data, context }: { data: { id: string; driverId: string }; context: AuditContext }) => {
         const db = getDb()
+        const cooperativeId = await resolveUserCooperative(context.session.userId)
+        const whereClause = cooperativeId
+          ? and(eq(orders.id, data.id), eq(orders.cooperativeId, cooperativeId))
+          : eq(orders.id, data.id)
         const [updated] = await db
           .update(orders)
           .set({
             assignedDriverId: data.driverId,
             updatedAt: new Date(),
           })
-          .where(eq(orders.id, data.id))
+          .where(whereClause)
           .returning()
         if (!updated) throw new Error('Order not found')
 
@@ -161,12 +185,16 @@ export const updateOrderStatus = createServerFn({ method: 'POST' })
   .middleware([requireRole(['admin', 'manager', 'driver'])])
   .handler(
     withAuditLog<{ id: string; status: OrderStatus }, Order>(
-      async ({ data }: { data: { id: string; status: OrderStatus }; context: AuditContext }) => {
+      async ({ data, context }: { data: { id: string; status: OrderStatus }; context: AuditContext }) => {
         const db = getDb()
+        const cooperativeId = await resolveUserCooperative(context.session.userId)
+        const whereClause = cooperativeId
+          ? and(eq(orders.id, data.id), eq(orders.cooperativeId, cooperativeId))
+          : eq(orders.id, data.id)
         const [updated] = await db
           .update(orders)
           .set({ status: data.status, updatedAt: new Date() })
-          .where(eq(orders.id, data.id))
+          .where(whereClause)
           .returning()
         if (!updated) throw new Error('Order not found')
 
@@ -190,9 +218,13 @@ export const deleteOrder = createServerFn({ method: 'POST' })
   .middleware([requireRole(['admin'])])
   .handler(
     withAuditLog<{ id: string }, void>(
-      async ({ data }: { data: { id: string }; context: AuditContext }) => {
+      async ({ data, context }: { data: { id: string }; context: AuditContext }) => {
         const db = getDb()
-        await db.delete(orders).where(eq(orders.id, data.id))
+        const cooperativeId = await resolveUserCooperative(context.session.userId)
+        const whereClause = cooperativeId
+          ? and(eq(orders.id, data.id), eq(orders.cooperativeId, cooperativeId))
+          : eq(orders.id, data.id)
+        await db.delete(orders).where(whereClause)
       },
       {
         action: 'order.delete',
