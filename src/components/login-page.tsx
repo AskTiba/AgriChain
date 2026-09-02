@@ -23,7 +23,7 @@ export function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-dvh">
+    <div className="flex h-dvh overflow-hidden">
       {/* Left panel — branding */}
       <div className="relative hidden overflow-hidden lg:flex lg:w-1/2">
         {/* Gradient background */}

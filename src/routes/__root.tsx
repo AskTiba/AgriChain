@@ -337,7 +337,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
     if (typeof window === 'undefined') return '/'
     return window.location.pathname
   })
-  const isLandingPage = currentPath === '/'
+  const isStandalonePage = ['/', '/login', '/register'].includes(currentPath)
 
   React.useEffect(() => {
     const handleLocationChange = () => {
@@ -399,8 +399,8 @@ function RootDocument({ children }: { children: React.ReactNode }) {
           </a>
 
           <div className="flex min-h-dvh flex-col">
-            {/* Header — minimal for landing page, full nav for app */}
-            {isLandingPage ? (
+            {/* Header — none for login/register, minimal for landing, full nav for app */}
+            {(currentPath === '/login' || currentPath === '/register') ? null : isStandalonePage ? (
               <header
                 className="sticky top-0 z-50 border-b border-[var(--color-border-subtle)] bg-[var(--color-surface)]/80 backdrop-blur-md"
                 role="banner"
@@ -623,7 +623,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
             </main>
 
             {/* Footer — skip for landing page (it has its own) */}
-            {!isLandingPage && (
+            {!isStandalonePage && (
               <footer
                 className="border-t border-[var(--color-border-subtle)] bg-[var(--color-surface)]"
                 role="contentinfo"
