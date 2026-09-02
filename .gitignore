@@ -39,3 +39,4 @@ pnpm-debug.log*
 .devpartner/
 AGENTS.md
 opencode.jsonc
+.vercel

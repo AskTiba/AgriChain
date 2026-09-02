@@ -333,19 +333,9 @@ function RootDocument({ children }: { children: React.ReactNode }) {
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false)
   const routeContext = Route.useRouteContext()
   const user = routeContext.user
-  const [currentPath, setCurrentPath] = React.useState(() => {
-    if (typeof window === 'undefined') return '/'
-    return window.location.pathname
-  })
-  const isStandalonePage = ['/', '/login', '/register'].includes(currentPath)
-
-  React.useEffect(() => {
-    const handleLocationChange = () => {
-      setCurrentPath(window.location.pathname)
-    }
-    window.addEventListener('popstate', handleLocationChange)
-    return () => window.removeEventListener('popstate', handleLocationChange)
-  }, [])
+  const isStandalonePage = ['/', '/login', '/register'].includes(
+    typeof window !== 'undefined' ? window.location.pathname : '/'
+  )
 
   React.useEffect(() => {
     const resolved = resolveTheme(mode)
@@ -400,7 +390,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 
           <div className="flex min-h-dvh flex-col">
             {/* Header — none for login/register, minimal for landing, full nav for app */}
-            {(currentPath === '/login' || currentPath === '/register') ? null : isStandalonePage ? (
+            {(typeof window !== 'undefined' && (window.location.pathname === '/login' || window.location.pathname === '/register')) ? null : isStandalonePage ? (
               <header
                 className="sticky top-0 z-50 border-b border-[var(--color-border-subtle)] bg-[var(--color-surface)]/80 backdrop-blur-md"
                 role="banner"
