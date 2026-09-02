@@ -333,6 +333,19 @@ function RootDocument({ children }: { children: React.ReactNode }) {
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false)
   const routeContext = Route.useRouteContext()
   const user = routeContext.user
+  const [currentPath, setCurrentPath] = React.useState(() => {
+    if (typeof window === 'undefined') return '/'
+    return window.location.pathname
+  })
+  const isLandingPage = currentPath === '/'
+
+  React.useEffect(() => {
+    const handleLocationChange = () => {
+      setCurrentPath(window.location.pathname)
+    }
+    window.addEventListener('popstate', handleLocationChange)
+    return () => window.removeEventListener('popstate', handleLocationChange)
+  }, [])
 
   React.useEffect(() => {
     const resolved = resolveTheme(mode)
@@ -360,7 +373,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
   }
 
   const navLinks = [
-    { to: '/', label: 'Dashboard', exact: true },
+    { to: '/dashboard', label: 'Dashboard' },
     { to: '/harvest', label: 'Harvest' },
     { to: '/logistics', label: 'Logistics' },
     { to: '/buyer', label: 'Buyer' },
@@ -386,177 +399,240 @@ function RootDocument({ children }: { children: React.ReactNode }) {
           </a>
 
           <div className="flex min-h-dvh flex-col">
-            <header
-              className="sticky top-0 z-50 border-b border-[var(--color-border-subtle)] bg-[var(--color-surface)]/80 backdrop-blur-md"
-              role="banner"
-            >
-              <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                <div className="flex h-14 items-center justify-between">
-                  <Link to="/" className="flex cursor-pointer items-center gap-2 no-underline">
-                    <span className="text-lg font-bold text-[var(--color-primary)]">
-                      Agri-Tech Co-op
-                    </span>
-                  </Link>
-
-                  {/* Desktop nav */}
-                  <nav aria-label="Primary navigation" className="hidden items-center gap-1 md:flex">
-                    {navLinks.map((link) => (
-                      <Link
-                        key={link.to}
-                        to={link.to}
-                        className="cursor-pointer rounded-lg px-3 py-2 text-sm font-medium text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-surface)] hover:text-[var(--color-text)] [&.active]:bg-[var(--color-primary)]/10 [&.active]:text-[var(--color-primary)]"
-                        activeOptions={link.exact ? { exact: true } : undefined}
+            {/* Header — minimal for landing page, full nav for app */}
+            {isLandingPage ? (
+              <header
+                className="sticky top-0 z-50 border-b border-[var(--color-border-subtle)] bg-[var(--color-surface)]/80 backdrop-blur-md"
+                role="banner"
+              >
+                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                  <div className="flex h-14 items-center justify-between">
+                    <Link to="/" className="flex cursor-pointer items-center gap-2 no-underline">
+                      <span className="text-lg font-bold text-[var(--color-primary)]">
+                        Agri-Tech Co-op
+                      </span>
+                    </Link>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={cycleTheme}
+                        aria-label={`Theme: ${mode}. Click to cycle.`}
+                        type="button"
+                        className="inline-flex min-h-[44px] min-w-[44px] cursor-pointer items-center justify-center rounded-[var(--radius-lg)] text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-surface)] hover:text-[var(--color-text)]"
                       >
-                        {link.label}
+                        {mode === 'system' ? (
+                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <rect width="20" height="14" x="2" y="3" rx="2" />
+                            <line x1="8" x2="16" y1="21" y2="21" />
+                            <line x1="12" x2="12" y1="17" y2="21" />
+                          </svg>
+                        ) : mode === 'dark' ? (
+                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
+                          </svg>
+                        ) : (
+                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <circle cx="12" cy="12" r="4" />
+                            <path d="M12 2v2" />
+                            <path d="M12 20v2" />
+                            <path d="m4.93 4.93 1.41 1.41" />
+                            <path d="m17.66 17.66 1.41 1.41" />
+                            <path d="M2 12h2" />
+                            <path d="M20 12h2" />
+                            <path d="m6.34 17.66-1.41 1.41" />
+                            <path d="m19.07 4.93-1.41 1.41" />
+                          </svg>
+                        )}
+                      </button>
+                      <Link
+                        to="/login"
+                        className="inline-flex min-h-[44px] cursor-pointer items-center rounded-[var(--radius-md)] px-4 py-2 text-sm font-medium text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-surface)] hover:text-[var(--color-text)]"
+                      >
+                        Sign In
                       </Link>
-                    ))}
-                  </nav>
-
-                  <div className="flex items-center gap-2">
-                    {/* Theme toggle */}
-                    <button
-                      onClick={cycleTheme}
-                      aria-label={`Theme: ${mode}. Click to cycle.`}
-                      type="button"
-                      className="inline-flex min-h-[44px] min-w-[44px] cursor-pointer items-center justify-center rounded-[var(--radius-lg)] text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-surface)] hover:text-[var(--color-text)]"
-                    >
-                      {mode === 'system' ? (
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <rect width="20" height="14" x="2" y="3" rx="2" />
-                          <line x1="8" x2="16" y1="21" y2="21" />
-                          <line x1="12" x2="12" y1="17" y2="21" />
-                        </svg>
-                      ) : mode === 'dark' ? (
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
-                        </svg>
-                      ) : (
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <circle cx="12" cy="12" r="4" />
-                          <path d="M12 2v2" />
-                          <path d="M12 20v2" />
-                          <path d="m4.93 4.93 1.41 1.41" />
-                          <path d="m17.66 17.66 1.41 1.41" />
-                          <path d="M2 12h2" />
-                          <path d="M20 12h2" />
-                          <path d="m6.34 17.66-1.41 1.41" />
-                          <path d="m19.07 4.93-1.41 1.41" />
-                        </svg>
-                      )}
-                    </button>
-
-                    {/* Auth buttons - desktop */}
-                    {user ? (
-                      <AuthButtons user={user} />
-                    ) : (
-                      <div className="hidden items-center gap-2 md:flex">
-                        <Link
-                          to="/login"
-                          className="inline-flex min-h-[44px] cursor-pointer items-center rounded-[var(--radius-md)] px-4 py-2 text-sm font-medium text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-surface)] hover:text-[var(--color-text)]"
-                        >
-                          Sign In
-                        </Link>
-                        <Link
-                          to="/register"
-                          className="inline-flex min-h-[44px] cursor-pointer items-center rounded-[var(--radius-md)] bg-[var(--color-primary)] px-4 py-2 text-sm font-medium text-[var(--color-primary-foreground)] transition-colors hover:bg-[var(--color-primary-hover)]"
-                        >
-                          Sign Up
-                        </Link>
-                      </div>
-                    )}
-
-                    {/* Mobile menu button */}
-                    <button
-                      onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                      aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
-                      aria-expanded={mobileMenuOpen}
-                      type="button"
-                      className="inline-flex min-h-[44px] min-w-[44px] cursor-pointer items-center justify-center rounded-[var(--radius-lg)] text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-surface)] hover:text-[var(--color-text)] md:hidden"
-                    >
-                      {mobileMenuOpen ? (
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M18 6 6 18" />
-                          <path d="m6 6 12 12" />
-                        </svg>
-                      ) : (
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <line x1="4" x2="20" y1="12" y2="12" />
-                          <line x1="4" x2="20" y1="6" y2="6" />
-                          <line x1="4" x2="20" y1="18" y2="18" />
-                        </svg>
-                      )}
-                    </button>
+                      <Link
+                        to="/register"
+                        className="inline-flex min-h-[44px] cursor-pointer items-center rounded-[var(--radius-md)] bg-[var(--color-primary)] px-4 py-2 text-sm font-medium text-[var(--color-primary-foreground)] transition-colors hover:bg-[var(--color-primary-hover)]"
+                      >
+                        Sign Up
+                      </Link>
+                    </div>
                   </div>
                 </div>
+              </header>
+            ) : (
+              <header
+                className="sticky top-0 z-50 border-b border-[var(--color-border-subtle)] bg-[var(--color-surface)]/80 backdrop-blur-md"
+                role="banner"
+              >
+                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                  <div className="flex h-14 items-center justify-between">
+                    <Link to="/dashboard" className="flex cursor-pointer items-center gap-2 no-underline">
+                      <span className="text-lg font-bold text-[var(--color-primary)]">
+                        Agri-Tech Co-op
+                      </span>
+                    </Link>
 
-                {/* Mobile nav */}
-                {mobileMenuOpen && (
-                  <nav aria-label="Primary navigation" className="border-t border-[var(--color-border-subtle)] py-2 md:hidden">
-                    {navLinks.map((link) => (
-                      <Link
-                        key={link.to}
-                        to={link.to}
-                        onClick={() => setMobileMenuOpen(false)}
-                        className="block cursor-pointer px-3 py-2.5 text-sm font-medium text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-surface)] hover:text-[var(--color-text)] [&.active]:bg-[var(--color-primary)]/10 [&.active]:text-[var(--color-primary)]"
-                        activeOptions={link.exact ? { exact: true } : undefined}
+                    {/* Desktop nav */}
+                    <nav aria-label="Primary navigation" className="hidden items-center gap-1 md:flex">
+                      {navLinks.map((link) => (
+                        <Link
+                          key={link.to}
+                          to={link.to}
+                          className="cursor-pointer rounded-lg px-3 py-2 text-sm font-medium text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-surface)] hover:text-[var(--color-text)] [&.active]:bg-[var(--color-primary)]/10 [&.active]:text-[var(--color-primary)]"
+                        >
+                          {link.label}
+                        </Link>
+                      ))}
+                    </nav>
+
+                    <div className="flex items-center gap-2">
+                      {/* Theme toggle */}
+                      <button
+                        onClick={cycleTheme}
+                        aria-label={`Theme: ${mode}. Click to cycle.`}
+                        type="button"
+                        className="inline-flex min-h-[44px] min-w-[44px] cursor-pointer items-center justify-center rounded-[var(--radius-lg)] text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-surface)] hover:text-[var(--color-text)]"
                       >
-                        {link.label}
-                      </Link>
-                    ))}
-                    {user && (
-                      <Link
-                        to="/notifications"
-                        onClick={() => setMobileMenuOpen(false)}
-                        className="block cursor-pointer px-3 py-2.5 text-sm font-medium text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-surface)] hover:text-[var(--color-text)] [&.active]:bg-[var(--color-primary)]/10 [&.active]:text-[var(--color-primary)]"
-                      >
-                        Notifications
-                      </Link>
-                    )}
-                      <div className="border-t border-[var(--color-border-subtle)] mt-2 pt-2">
+                        {mode === 'system' ? (
+                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <rect width="20" height="14" x="2" y="3" rx="2" />
+                            <line x1="8" x2="16" y1="21" y2="21" />
+                            <line x1="12" x2="12" y1="17" y2="21" />
+                          </svg>
+                        ) : mode === 'dark' ? (
+                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
+                          </svg>
+                        ) : (
+                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <circle cx="12" cy="12" r="4" />
+                            <path d="M12 2v2" />
+                            <path d="M12 20v2" />
+                            <path d="m4.93 4.93 1.41 1.41" />
+                            <path d="m17.66 17.66 1.41 1.41" />
+                            <path d="M2 12h2" />
+                            <path d="M20 12h2" />
+                            <path d="m6.34 17.66-1.41 1.41" />
+                            <path d="m19.07 4.93-1.41 1.41" />
+                          </svg>
+                        )}
+                      </button>
+
+                      {/* Auth buttons - desktop */}
                       {user ? (
-                        <>
-                          <div className="px-3 py-2 text-sm text-[var(--color-text-muted)]">
-                            Signed in as <span className="font-medium text-[var(--color-text)]">{user.name}</span>
-                          </div>
-                          <MobileLogoutButton />
-                          <MobileDeleteAccountButton />
-                        </>
+                        <AuthButtons user={user} />
                       ) : (
-                        <>
+                        <div className="hidden items-center gap-2 md:flex">
                           <Link
                             to="/login"
-                            onClick={() => setMobileMenuOpen(false)}
-                            className="block cursor-pointer px-3 py-2.5 text-sm font-medium text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-surface)] hover:text-[var(--color-text)]"
+                            className="inline-flex min-h-[44px] cursor-pointer items-center rounded-[var(--radius-md)] px-4 py-2 text-sm font-medium text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-surface)] hover:text-[var(--color-text)]"
                           >
                             Sign In
                           </Link>
                           <Link
                             to="/register"
-                            onClick={() => setMobileMenuOpen(false)}
-                            className="block cursor-pointer px-3 py-2.5 text-sm font-medium text-[var(--color-primary)] transition-colors hover:bg-[var(--color-surface)]"
+                            className="inline-flex min-h-[44px] cursor-pointer items-center rounded-[var(--radius-md)] bg-[var(--color-primary)] px-4 py-2 text-sm font-medium text-[var(--color-primary-foreground)] transition-colors hover:bg-[var(--color-primary-hover)]"
                           >
                             Sign Up
                           </Link>
-                        </>
+                        </div>
                       )}
+
+                      {/* Mobile menu button */}
+                      <button
+                        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                        aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
+                        aria-expanded={mobileMenuOpen}
+                        type="button"
+                        className="inline-flex min-h-[44px] min-w-[44px] cursor-pointer items-center justify-center rounded-[var(--radius-lg)] text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-surface)] hover:text-[var(--color-text)] md:hidden"
+                      >
+                        {mobileMenuOpen ? (
+                          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M18 6 6 18" />
+                            <path d="m6 6 12 12" />
+                          </svg>
+                        ) : (
+                          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <line x1="4" x2="20" y1="12" y2="12" />
+                            <line x1="4" x2="20" y1="6" y2="6" />
+                            <line x1="4" x2="20" y1="18" y2="18" />
+                          </svg>
+                        )}
+                      </button>
                     </div>
-                  </nav>
-                )}
-              </div>
-            </header>
+                  </div>
+
+                  {/* Mobile nav */}
+                  {mobileMenuOpen && (
+                    <nav aria-label="Primary navigation" className="border-t border-[var(--color-border-subtle)] py-2 md:hidden">
+                      {navLinks.map((link) => (
+                        <Link
+                          key={link.to}
+                          to={link.to}
+                          onClick={() => setMobileMenuOpen(false)}
+                          className="block cursor-pointer px-3 py-2.5 text-sm font-medium text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-surface)] hover:text-[var(--color-text)] [&.active]:bg-[var(--color-primary)]/10 [&.active]:text-[var(--color-primary)]"
+                        >
+                          {link.label}
+                        </Link>
+                      ))}
+                      {user && (
+                        <Link
+                          to="/notifications"
+                          onClick={() => setMobileMenuOpen(false)}
+                          className="block cursor-pointer px-3 py-2.5 text-sm font-medium text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-surface)] hover:text-[var(--color-text)] [&.active]:bg-[var(--color-primary)]/10 [&.active]:text-[var(--color-primary)]"
+                        >
+                          Notifications
+                        </Link>
+                      )}
+                      <div className="border-t border-[var(--color-border-subtle)] mt-2 pt-2">
+                        {user ? (
+                          <>
+                            <div className="px-3 py-2 text-sm text-[var(--color-text-muted)]">
+                              Signed in as <span className="font-medium text-[var(--color-text)]">{user.name}</span>
+                            </div>
+                            <MobileLogoutButton />
+                            <MobileDeleteAccountButton />
+                          </>
+                        ) : (
+                          <>
+                            <Link
+                              to="/login"
+                              onClick={() => setMobileMenuOpen(false)}
+                              className="block cursor-pointer px-3 py-2.5 text-sm font-medium text-[var(--color-text-muted)] transition-colors hover:bg-[var(--color-surface)] hover:text-[var(--color-text)]"
+                            >
+                              Sign In
+                            </Link>
+                            <Link
+                              to="/register"
+                              onClick={() => setMobileMenuOpen(false)}
+                              className="block cursor-pointer px-3 py-2.5 text-sm font-medium text-[var(--color-primary)] transition-colors hover:bg-[var(--color-surface)]"
+                            >
+                              Sign Up
+                            </Link>
+                          </>
+                        )}
+                      </div>
+                    </nav>
+                  )}
+                </div>
+              </header>
+            )}
 
             <main id="main-content" className="flex-1" role="main">
               {children}
             </main>
 
-            <footer
-              className="border-t border-[var(--color-border-subtle)] bg-[var(--color-surface)]"
-              role="contentinfo"
-            >
-              <div className="mx-auto max-w-7xl px-4 py-6 text-center text-sm text-[var(--color-text-subtle)] sm:px-6 lg:px-8">
-                Agri-Tech Cooperative & Supply Chain Tracker
-              </div>
-            </footer>
+            {/* Footer — skip for landing page (it has its own) */}
+            {!isLandingPage && (
+              <footer
+                className="border-t border-[var(--color-border-subtle)] bg-[var(--color-surface)]"
+                role="contentinfo"
+              >
+                <div className="mx-auto max-w-7xl px-4 py-6 text-center text-sm text-[var(--color-text-subtle)] sm:px-6 lg:px-8">
+                  Agri-Tech Cooperative & Supply Chain Tracker
+                </div>
+              </footer>
+            )}
           </div>
 
           {DevTools && (
