@@ -401,18 +401,33 @@ const steps = [
     title: 'Create Your Cooperative',
     description: 'Sign up in seconds. Set up your cooperative, invite members, and assign roles — admin, manager, driver, or buyer.',
     color: 'from-emerald-500 to-teal-600',
+    icon: (
+      <svg className="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" />
+      </svg>
+    ),
   },
   {
     number: '02',
     title: 'Track Harvests & Logistics',
     description: 'Members log harvests from the field. Assign drivers, match shipments to vehicles, and monitor warehouse capacity in real-time.',
     color: 'from-amber-500 to-orange-600',
+    icon: (
+      <svg className="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12" />
+      </svg>
+    ),
   },
   {
     number: '03',
     title: 'Connect & Sell',
     description: 'List your produce for buyers. Confirm orders, manage payments, and build direct relationships — cutting out the middlemen.',
     color: 'from-blue-500 to-indigo-600',
+    icon: (
+      <svg className="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" />
+      </svg>
+    ),
   },
 ]
 
@@ -464,12 +479,18 @@ function HowItWorksSection() {
                     <p className="text-[var(--color-text-muted)] leading-relaxed">{step.description}</p>
                   </div>
 
-                  {/* Visual placeholder */}
+                  {/* Visual illustration */}
                   <div className={`mt-6 lg:mt-0 ${i % 2 === 0 ? 'lg:col-start-2 lg:pl-16' : 'lg:col-start-1 lg:row-start-1 lg:pr-16 lg:text-right'}`} style={{ direction: 'ltr' }}>
-                    <div className={`h-48 rounded-2xl bg-gradient-to-br ${step.color} p-[1px]`}>
-                      <div className="flex h-full w-full items-center justify-center rounded-2xl bg-[var(--color-surface-elevated)]">
-                        <div className={`h-20 w-20 rounded-2xl bg-gradient-to-br ${step.color} opacity-20`} />
+                    <div className="relative overflow-hidden rounded-2xl border border-[var(--color-border-subtle)] bg-[var(--color-surface-elevated)] p-8 shadow-sm">
+                      {/* Background decoration */}
+                      <div className={`absolute -right-8 -top-8 h-32 w-32 rounded-full bg-gradient-to-br ${step.color} opacity-10 blur-2xl`} />
+                      <div className={`absolute -bottom-4 -left-4 h-24 w-24 rounded-full bg-gradient-to-br ${step.color} opacity-5 blur-xl`} />
+                      {/* Icon */}
+                      <div className={`relative mb-4 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br ${step.color} text-white shadow-lg`}>
+                        {step.icon}
                       </div>
+                      {/* Step number */}
+                      <div className="relative text-sm font-bold text-[var(--color-text-subtle)]">Step {step.number}</div>
                     </div>
                   </div>
                 </div>
